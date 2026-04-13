@@ -24,7 +24,7 @@
   }
 
   body {
-    background: var(--dark);
+    background: transparent;
     color: var(--text);
     font-family: 'Mulish', sans-serif;
     min-height: 100dvh;
@@ -46,10 +46,17 @@
 
   .quiz-wrapper {
     width: 100%;
-    max-width: 640px;
+    max-width: 960px;
     position: relative;
     margin: 0 auto;
     padding-top: 8px;
+  }
+  
+  /* Мобильная версия */
+  @media (max-width: 768px) {
+    .quiz-wrapper {
+      max-width: 640px;
+    }
   }
 
   /* Progress bar */
@@ -103,11 +110,12 @@
   .screen.back { animation: slideBack 0.4s cubic-bezier(.4,0,.2,1); }
 
   .card {
-    background: var(--card);
+    background: rgba(26, 26, 26, 0.95);
     border: 1px solid var(--border);
     border-radius: 24px;
     padding: 20px 18px;
     margin-bottom: 16px;
+    backdrop-filter: blur(10px);
   }
 
   .screen-title {
