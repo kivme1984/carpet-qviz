@@ -898,9 +898,6 @@ function showResult() {
   // Заголовок результата без имени (имя будет добавлено позже в контактах)
   document.getElementById('result-title').textContent = 'Расчёт готов!';
 
-  // Push to uCalc fields if present
-  syncUcalc(servicesTotal, discPct, discAmt, afterDisc, grand, appliedMin);
-
   state.history.push(6);
   showScreen(6);
 }
@@ -963,9 +960,8 @@ function submitOrder() {
   };
 
   // URL Google Apps Script
-  // ВАЖНО: После деплоя скрипта замени на свой URL
-  var SCRIPT_URL = 'ВАШ_URL_GOOGLE_APPS_SCRIPT';
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPtjIMCq7uYlvIKyiTeAXDoRIXPsUzwKShYJatM3aONmwaS8YgsdP-F_awi83zBxQm3g/exec';
+  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPtjIMCq7uYlvIKyiTeAXDoRIXPsUzwKShYJatM3aONmwaS8YgsdP-F_awi83zBxQm3g/exec';
+
   // Показываем индикатор загрузки
   var resultTitle = document.getElementById('result-title');
   var resultSub = document.getElementById('result-sub');
@@ -983,13 +979,16 @@ var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPtjIMCq7uYlvIKyiTeAX
     },
     body: JSON.stringify(orderData)
   })
-  .then(function(response) {
-    // no-cors не даёт читать response, считаем что успешно если не упало
-    resultTitle.textContent = state.name + ', заявка принята! ✓';
-    resultSub.textContent = 'Мы свяжемся с вами в ближайшее время по номеру ' + state.phone;
+  .then(function() {
+    // no-cors не даёт читать response
+    // Показываем успех с небольшой задержкой для визуального эффекта
+    setTimeout(function() {
+      resultTitle.textContent = state.name + ', заявка принята! ✓';
+      resultSub.textContent = 'Мы свяжемся с вами в ближайшее время по номеру ' + state.phone;
+    }, 500);
   })
   .catch(function(error) {
-    // Ошибка отправки
+    // Ошибка отправки (только если совсем не удалось отправить)
     console.error('Ошибка отправки заявки:', error);
     resultTitle.textContent = '⚠️ Ошибка отправки';
     resultSub.textContent = 'Позвоните нам напрямую: +7 (904) 929-35-45 или напишите в VK';
