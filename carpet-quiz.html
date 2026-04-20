@@ -985,6 +985,8 @@ function submitOrder() {
     setTimeout(function() {
       resultTitle.textContent = state.name + ', заявка принята! ✓';
       resultSub.textContent = 'Мы свяжемся с вами в ближайшее время по номеру ' + state.phone;
+      // Скрываем кнопку "Оформить заказ" - заявка уже отправлена
+      document.getElementById('btn-order').style.display = 'none';
     }, 500);
   })
   .catch(function(error) {
