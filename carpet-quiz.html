@@ -912,29 +912,7 @@ function addLine(cont, label, value, cls) {
   cont.appendChild(div);
 }
 
-function syncUcalc(total, discPct, discAmt, afterDisc, grand, appliedMin) {
-  function setField(id, val) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    el.value = val;
-    ['input','change'].forEach(function(e){ el.dispatchEvent(new Event(e, {bubbles:true})); });
-  }
-  setField('input_text-1', state.name);
-  setField('input_text-5', state.phone || '+7');
-  setField('input_text-4', state.email);
-
-  var lines = ['Имя: ' + (state.name||'—'), 'Телефон: ' + (state.phone||'—'), 'Адрес доставки: ' + (state.email||'—'), '---'];
-  state.rugs.forEach(function(rug, i) {
-    var info = calcRug(rug);
-    lines.push('Ковёр #'+(i+1)+': '+rug.width+'×'+rug.length+' м ('+info.area+' м²); '+rug.type+(info.extras.length?' | '+info.extras.join(', '):'') + ' | '+fmt(info.total)+' ₽');
-  });
-  lines.push('Сумма: '+fmt(total)+' ₽');
-  if (discPct > 0) lines.push('Скидка '+discPct+'%: −'+fmt(discAmt)+' ₽');
-  lines.push('Доставка: '+fmt(PRICES.delivery)+' ₽');
-  if (appliedMin > 0) lines.push('Минимум заказа: доплата '+fmt(appliedMin)+' ₽');
-  lines.push('Итог: '+fmt(grand)+' ₽');
-  setField('input_text-8', lines.join('\n'));
-}
+// syncUcalc удалена - больше не используется
 
 function submitOrder() {
   // Собираем контактные данные
@@ -956,16 +934,66 @@ function submitOrder() {
   var grand = Math.max(afterDisc + PRICES.delivery, PRICES.min_order);
   var appliedMin = grand - (afterDisc + PRICES.delivery);
 
-  // Передаём контакты и итог в uCalc
-  syncUcalc(servicesTotal, discPct, discAmt, afterDisc, grand, appliedMin);
+  // Формируем данные для отправки в Google Apps Script → MAX
+  var rugsData = state.rugs.map(function(rug, i) {
+    var info = calcRug(rug);
+    return {
+      number: i + 1,
+      width: rug.width,
+      length: rug.length,
+      area: info.area,
+      type: rug.type,
+      extras: info.extras,
+      total: info.total
+    };
+  });
 
-  // Обновляем заголовок на экране результата
-  document.getElementById('result-title').textContent = state.name + ', заявка принята!';
-  document.getElementById('result-sub').textContent = 'Мы свяжемся с вами в ближайшее время по номеру ' + state.phone;
+  var orderData = {
+    name: state.name,
+    phone: state.phone,
+    address: state.email || '', // используем поле email как адрес
+    rugs: rugsData,
+    servicesTotal: servicesTotal,
+    discount: discAmt,
+    discountPercent: discPct,
+    delivery: PRICES.delivery,
+    minOrderAdjustment: appliedMin,
+    total: grand,
+    timestamp: new Date().toISOString()
+  };
 
-  // Возвращаемся на экран результата
+  // URL Google Apps Script
+  // ВАЖНО: После деплоя скрипта замени на свой URL
+  var SCRIPT_URL = 'ВАШ_URL_GOOGLE_APPS_SCRIPT';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPtjIMCq7uYlvIKyiTeAXDoRIXPsUzwKShYJatM3aONmwaS8YgsdP-F_awi83zBxQm3g/exec';
+  // Показываем индикатор загрузки
+  var resultTitle = document.getElementById('result-title');
+  var resultSub = document.getElementById('result-sub');
+  resultTitle.textContent = 'Отправка заявки...';
+  resultSub.textContent = 'Пожалуйста, подождите';
   state.history.push(6);
   showScreen(6);
+
+  // Отправляем данные
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors', // Google Apps Script требует no-cors
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(orderData)
+  })
+  .then(function(response) {
+    // no-cors не даёт читать response, считаем что успешно если не упало
+    resultTitle.textContent = state.name + ', заявка принята! ✓';
+    resultSub.textContent = 'Мы свяжемся с вами в ближайшее время по номеру ' + state.phone;
+  })
+  .catch(function(error) {
+    // Ошибка отправки
+    console.error('Ошибка отправки заявки:', error);
+    resultTitle.textContent = '⚠️ Ошибка отправки';
+    resultSub.textContent = 'Позвоните нам напрямую: +7 (904) 929-35-45 или напишите в VK';
+  });
 }
 
 function restartQuiz() {
