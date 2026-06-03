@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0e0e0e">
+<title>Калькулятор чистки ковров — Промой Ковер</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --yellow: #F5C518;
+    --dark: #0e0e0e;
+    --card: #1a1a1a;
+    --card2: #222222;
+    --border: #2e2e2e;
+    --text: #f0f0f0;
+    --muted: #888;
+    --accent2: #ff6b35;
+  }
+
+  body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    min-height: 100dvh;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .quiz-wrapper {
+    width: 100%;
+    max-width: 960px;
+    position: relative;
+    margin: 0 auto;
+    padding-top: 8px;
+  }
+  
+  /* Мобильная версия */
+  @media (max-width: 768px) {
+    .quiz-wrapper {
+      max-width: 640px;
+    }
+  }
+
+  /* Progress bar */
+  .progress-track {
+    height: 3px;
+    background: var(--border);
+    border-radius: 99px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--yellow), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .step-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Manrope', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .step-label span:last-child { color: var(--yellow); font-weight: 700; }
+  
+  /* Hide progress on welcome screen */
+  .quiz-wrapper.welcome-screen .step-label,
+  .quiz-wrapper.welcome-screen .progress-track {
+    display: none;
+  }
+
+  /* Cards / screens */
+  .screen {
+    display: none;
+    animation: slideIn 0.4s cubic-bezier(.4,0,.2,1);
+  }
+  .screen.active { display: block; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideBack {
+    from { opacity: 0; transform: translateX(-30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .screen.back { animation: slideBack 0.4s cubic-bezier(.4,0,.2,1); }
+
+  .card {
+    background: rgba(26, 26, 26, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 20px 18px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(10px);
+  }
+
+  .screen-title {
+    font-family: 'Manrope', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .screen-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  /* Option tiles */
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .options-grid.single { grid-template-columns: 1fr; }
+
+  .option-tile {
+    background: var(--card2);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+    min-height: 60px;
+  }
+  .option-tile::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5));
+    z-index: 1;
+    transition: opacity 0.2s;
+  }
+  .option-tile:hover { border-color: rgba(245,197,24,0.4); transform: translateY(-2px); }
+  .option-tile:hover::before { opacity: 0.8; }
+  .option-tile.selected {
+    border-color: var(--yellow);
+  }
+  .option-tile.selected::before { background: linear-gradient(135deg, rgba(245,197,24,0.3), rgba(245,197,24,0.1)); }
+  .option-icon { font-size: 20px; flex-shrink: 0; display:flex; align-items:center; position: relative; z-index: 2; }
+  .option-text { flex: 1; line-height: 1.35; position: relative; z-index: 2; }
+  .option-price { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 500; }
+  .option-check {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-size: 10px;
+    position: relative; z-index: 2;
+  }
+  .option-tile.selected .option-check {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: #000;
+  }
+
+  /* Multi-select options */
+  .option-tile.multi .option-check { border-radius: 6px; }
+
+  /* Size inputs */
+  .size-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .input-group { display: flex; flex-direction: column; gap: 8px; }
+  .input-group label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  
+  /* Slider styles */
+  .slider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .slider-value {
+    background: var(--card2);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 24px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 5px;
+    background: var(--border);
+    outline: none;
+    margin-top: 8px;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--yellow);
+    cursor: pointer;
+    border: 2px solid var(--dark);
+  }
+  .slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--yellow);
+    cursor: pointer;
+    border: 2px solid var(--dark);
+  }
+  .area-display {
+    background: rgba(245,197,24,0.06);
+    border: 1px solid rgba(245,197,24,0.2);
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .area-display span:first-child { color: var(--muted); font-size: 13px; }
+  .area-display span:last-child { font-family: 'Manrope', sans-serif; font-weight: 700; color: var(--yellow); font-size: 20px; }
+
+  /* Contact inputs */
+  .contact-inputs { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+  .contact-field { display: flex; flex-direction: column; gap: 6px; }
+  .contact-field label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .contact-field input {
+    background: var(--card2);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 15px;
+    font-family: 'Manrope', sans-serif;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .contact-field input:focus { border-color: var(--yellow); }
+  .contact-field input::placeholder { color: var(--muted); }
+
+  /* Add rug / continue */
+  .btn-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+  .btn {
+    border: none;
+    border-radius: 14px;
+    padding: 14px 28px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--yellow);
+    color: #000;
+    flex: 1;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,197,24,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-ghost {
+    background: transparent;
+    border: 2px solid var(--border);
+    color: var(--muted);
+  }
+  .btn-ghost:hover { border-color: #555; color: var(--text); }
+
+  .btn-outline {
+    background: transparent;
+    border: 2px solid rgba(245,197,24,0.4);
+    color: var(--yellow);
+    font-size: 13px;
+    padding: 12px 20px;
+  }
+  .btn-outline:hover { background: rgba(245,197,24,0.08); }
+
+  /* Rug summary chips */
+  .rugs-added {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .rug-chip {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    animation: fadeUp 0.3s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .rug-chip-info { flex: 1; }
+  .rug-chip-title { font-weight: 700; font-size: 14px; }
+  .rug-chip-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .rug-chip-price { font-family: 'Manrope', sans-serif; font-weight: 700; color: var(--yellow); font-size: 15px; white-space: nowrap; }
+  .rug-chip-del { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; padding: 4px; border-radius: 8px; transition: color 0.2s; }
+  .rug-chip-del:hover { color: var(--accent2); }
+
+  /* Result screen */
+  .result-hero {
+    text-align: center;
+    padding: 8px 0 32px;
+  }
+  .result-emoji { font-size: 56px; margin-bottom: 16px; display: block; }
+  
+  /* Пульсирующая желтая звезда */
+  .pulsing-star {
+    font-size: 72px;
+    color: var(--yellow);
+    margin-bottom: 16px;
+    display: inline-block;
+    animation: pulseStar 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 12px rgba(245, 197, 24, 0.6));
+  }
+  
+  @keyframes pulseStar {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.15);
+      opacity: 0.85;
+    }
+  }
+  
+  .result-title { font-family: 'Manrope', sans-serif; font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+  .result-sub { color: var(--muted); font-size: 14px; }
+
+  .result-lines { display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
+  .result-line {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .result-line:last-child { border-bottom: none; }
+  .result-line span:first-child { color: var(--muted); }
+  .result-line span:last-child { font-weight: 700; }
+  .result-line.discount span:last-child { color: #4ade80; }
+  .result-line.grand { padding: 16px 0 0; }
+  .result-line.grand span:first-child { font-family: 'Manrope', sans-serif; font-weight: 700; color: var(--text); font-size: 15px; }
+  .result-line.grand span:last-child { font-family: 'Manrope', sans-serif; font-weight: 900; color: var(--yellow); font-size: 24px; }
+
+  .min-notice {
+    background: rgba(245,197,24,0.08);
+    border: 1px solid rgba(245,197,24,0.25);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: rgba(245,197,24,0.9);
+    margin-top: 12px;
+    display: none;
+  }
+
+  .loyal-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--card2);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    margin-bottom: 20px;
+    user-select: none;
+  }
+  .loyal-toggle.on { border-color: var(--yellow); }
+  .loyal-icon { font-size: 22px; }
+  .loyal-text { flex: 1; }
+  .loyal-text strong { display: block; font-size: 14px; font-weight: 700; }
+  .loyal-text span { font-size: 12px; color: var(--muted); }
+  .toggle-sw {
+    width: 44px; height: 24px; border-radius: 99px;
+    background: var(--border); position: relative;
+    transition: background 0.25s; flex-shrink: 0;
+  }
+  .toggle-sw::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; transition: left 0.25s;
+  }
+  .loyal-toggle.on .toggle-sw { background: var(--yellow); }
+  .loyal-toggle.on .toggle-sw::after { left: 23px; }
+
+  /* Welcome screen */
+  .welcome-hero {
+    text-align: center;
+    padding: 0 0 12px;
+  }
+  .welcome-icon { font-size: 36px; display: block; margin-bottom: 6px; }
+  .welcome-title { font-family: 'Manrope', sans-serif; font-size: 17px; font-weight: 900; line-height: 1.15; margin-bottom: 4px; }
+  .welcome-title span { color: var(--yellow); }
+  .welcome-desc { color: var(--muted); font-size: 11.5px; line-height: 1.35; margin-bottom: 12px; }
+  .welcome-features { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+  .wf-item { background: var(--card2); border-radius: 10px; padding: 8px 6px; text-align: center; font-size: 10.5px; font-weight: 600; line-height: 1.2; }
+  .wf-item span { display: block; font-size: 16px; margin-bottom: 3px; }
+
+  @media (max-width: 500px) {
+    .card { padding: 24px 20px; }
+    .options-grid { grid-template-columns: 1fr; }
+    .size-inputs { grid-template-columns: 1fr; }
+    .welcome-features { grid-template-columns: 1fr; }
+    .screen-title { font-size: 18px; }
+    .result-title { font-size: 22px; }
+  }
+
+/* ===== PMK site block layout + лаконичный стиль ===== */
+:root {
+  --yellow: #FFD400;
+  --dark: #050607;
+  --card: #111417;
+  --card2: #171B1F;
+  --border: rgba(255,255,255,0.12);
+  --text: #FFFFFF;
+  --muted: #B8BDC2;
+  --accent2: #FF8A00;
+}
+
+body {
+  background: #050607;
+  font-family: 'Manrope', Arial, sans-serif;
+  min-height: 100vh;
+  display: block;
+  padding: 0;
+}
+
+.pmk-quiz-section {
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 58px) 16px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255, 212, 0, .14), transparent 32%),
+    radial-gradient(circle at 95% 85%, rgba(255, 138, 0, .10), transparent 30%),
+    linear-gradient(135deg, #050607 0%, #0B0F10 45%, #15191D 100%);
+}
+
+.pmk-quiz-section::before,
+.pmk-quiz-section::after {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(46px);
+  opacity: .34;
+  animation: pmkOrbFloat 9s ease-in-out infinite;
+}
+.pmk-quiz-section::before {
+  left: -160px;
+  top: -150px;
+  background: rgba(255, 212, 0, .22);
+}
+.pmk-quiz-section::after {
+  right: -180px;
+  bottom: -150px;
+  background: rgba(255, 138, 0, .16);
+  animation-delay: -4s;
+}
+
+@keyframes pmkOrbFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(24px, -18px, 0) scale(1.08); }
+}
+
+.pmk-quiz-layout {
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: minmax(300px, .86fr) minmax(420px, 1fr);
+  gap: clamp(18px, 3vw, 34px);
+  align-items: stretch;
+  position: relative;
+  z-index: 1;
+}
+
+.quiz-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pmkRightEnter .7s ease both;
+}
+
+.quiz-wrapper {
+  width: 100%;
+  max-width: 640px;
+  padding-top: 0;
+}
+
+.quiz-value-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 30px;
+  padding: clamp(24px, 3vw, 38px);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.035)),
+    rgba(8, 10, 12, .82);
+  border: 1px solid rgba(255,255,255,.13);
+  box-shadow: 0 26px 80px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.10);
+  backdrop-filter: blur(18px);
+  animation: pmkLeftEnter .7s ease both;
+}
+
+.quiz-value-panel::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(120deg, transparent 15%, rgba(255,212,0,.16), transparent 45%);
+  transform: translateX(-70%);
+  animation: pmkPanelShine 5.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.quiz-value-panel::after {
+  content: "";
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  right: -70px;
+  top: -70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,212,0,.26), transparent 70%);
+  pointer-events: none;
+}
+
+@keyframes pmkLeftEnter {
+  from { opacity: 0; transform: translateX(-28px) scale(.98); filter: blur(8px); }
+  to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+}
+@keyframes pmkRightEnter {
+  from { opacity: 0; transform: translateX(28px) scale(.98); filter: blur(8px); }
+  to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+}
+@keyframes pmkPanelShine {
+  0%, 48%, 100% { transform: translateX(-78%); opacity: 0; }
+  58% { opacity: 1; }
+  74% { transform: translateX(78%); opacity: 0; }
+}
+
+.value-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.value-kicker::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 20px rgba(255,212,0,.8);
+}
+
+.quiz-value-panel h2 {
+  margin: 0 0 16px;
+  color: #fff;
+  font-size: clamp(28px, 3.2vw, 46px);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  font-weight: 800;
+  max-width: 10.5em;
+}
+.value-lead {
+  color: rgba(255,255,255,.72);
+  font-size: 16px;
+  line-height: 1.62;
+  max-width: 520px;
+  margin: 0 0 22px;
+}
+.value-price-card {
+  position: relative;
+  margin: 26px 0;
+  padding: 22px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.25), transparent 28%),
+    linear-gradient(135deg, #FFD400, #FF9D00);
+  color: #080808;
+  box-shadow: 0 22px 55px rgba(255, 171, 0, .23);
+  animation: pmkPriceBreath 2.8s ease-in-out infinite;
+}
+@keyframes pmkPriceBreath {
+  0%, 100% { transform: translateY(0); box-shadow: 0 22px 55px rgba(255, 171, 0, .23); }
+  50% { transform: translateY(-3px); box-shadow: 0 30px 70px rgba(255, 171, 0, .32); }
+}
+.value-price-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .72;
+}
+.value-price-card strong {
+  display: block;
+  margin-top: 5px;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+.value-price-card small {
+  display: block;
+  margin-top: 7px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.value-points {
+  display: grid;
+  gap: 11px;
+  margin: 24px 0;
+}
+.value-points div {
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.08);
+  transform-origin: left center;
+  animation: pmkPointIn .55s ease both;
+}
+.value-points div:nth-child(2) { animation-delay: .1s; }
+.value-points div:nth-child(3) { animation-delay: .2s; }
+@keyframes pmkPointIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.value-points b {
+  color: var(--yellow);
+  font-size: 13px;
+}
+.value-points span,
+.value-trust span {
+  color: rgba(255,255,255,.78);
+  font-size: 14px;
+  line-height: 1.42;
+}
+.value-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+.value-trust span {
+  padding: 9px 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.065);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.value-hint {
+  margin-top: 24px;
+  color: var(--yellow);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+/* Более спокойная типографика */
+.screen-title,
+.result-title,
+.slider-value,
+.area-display span:last-child,
+.rug-chip-price,
+.result-line.grand span:first-child,
+.result-line.grand span:last-child {
+  font-family: 'Manrope', Arial, sans-serif;
+  letter-spacing: -0.035em;
+}
+
+.screen-title {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.screen-sub {
+  color: rgba(255,255,255,.62);
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  background: rgba(17, 20, 23, 0.88);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 22px 64px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(14px);
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  left: -50%;
+  top: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+  transform: skewX(-18deg);
+  pointer-events: none;
+}
+.screen.active .card::after {
+  animation: pmkCardSweep 1.15s ease .18s both;
+}
+@keyframes pmkCardSweep {
+  from { left: -55%; }
+  to { left: 115%; }
+}
+
+.screen {
+  animation: none;
+}
+.screen.active {
+  animation: pmkStepEnter .52s cubic-bezier(.18,.84,.25,1) both;
+}
+.screen.back {
+  animation: pmkStepBack .42s cubic-bezier(.18,.84,.25,1) both;
+}
+@keyframes pmkStepEnter {
+  from { opacity: 0; transform: translateY(18px) scale(.985); filter: blur(7px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes pmkStepBack {
+  from { opacity: 0; transform: translateY(-14px) scale(.985); filter: blur(7px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+.screen.active .screen-title {
+  animation: pmkTitleIn .5s ease .04s both;
+}
+.screen.active .screen-sub {
+  animation: pmkSubIn .5s ease .12s both;
+}
+@keyframes pmkTitleIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pmkSubIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.option-tile {
+  min-height: 74px;
+  border-color: rgba(255,255,255,.10);
+  background: rgba(23,27,31,.95);
+  transform-origin: center;
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease, background .22s ease;
+}
+.screen.active .option-tile,
+.screen.active .contact-field,
+.screen.active .rug-chip,
+.screen.active .result-line {
+  animation: pmkItemIn .45s ease both;
+}
+.screen.active .option-tile:nth-child(1),
+.screen.active .contact-field:nth-child(1),
+.screen.active .result-line:nth-child(1) { animation-delay: .05s; }
+.screen.active .option-tile:nth-child(2),
+.screen.active .contact-field:nth-child(2),
+.screen.active .result-line:nth-child(2) { animation-delay: .10s; }
+.screen.active .option-tile:nth-child(3),
+.screen.active .contact-field:nth-child(3),
+.screen.active .result-line:nth-child(3) { animation-delay: .15s; }
+.screen.active .option-tile:nth-child(4),
+.screen.active .result-line:nth-child(4) { animation-delay: .20s; }
+.screen.active .option-tile:nth-child(5),
+.screen.active .result-line:nth-child(5) { animation-delay: .25s; }
+@keyframes pmkItemIn {
+  from { opacity: 0; transform: translateY(14px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.option-tile:hover {
+  border-color: rgba(255,212,0,.55);
+  transform: translateY(-3px) scale(1.012);
+  box-shadow: 0 16px 34px rgba(0,0,0,.28), 0 0 0 1px rgba(255,212,0,.10);
+}
+.option-tile.selected {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 1px rgba(255,212,0,.22), 0 16px 38px rgba(255,212,0,.12);
+  animation: pmkSelectedPop .24s ease both;
+}
+@keyframes pmkSelectedPop {
+  0% { transform: scale(.985); }
+  60% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.option-tile::after {
+  content: "";
+  position: absolute;
+  inset: auto auto -42px -42px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,212,0,.22), transparent 68%);
+  opacity: 0;
+  transition: opacity .24s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+.option-tile:hover::after,
+.option-tile.selected::after {
+  opacity: 1;
+}
+
+.option-icon img {
+  width: 92px !important;
+  height: 92px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,.30);
+  transition: transform .25s ease, filter .25s ease;
+}
+.option-tile:hover .option-icon img {
+  transform: scale(1.035);
+  filter: saturate(1.08) contrast(1.04);
+}
+
+.progress-track {
+  height: 5px;
+  background: rgba(255,255,255,.10);
+}
+.progress-fill {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #FFD400, #FF8A00);
+  box-shadow: 0 0 22px rgba(255,212,0,.25);
+}
+.progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 44%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  animation: pmkProgressShine 1.8s ease-in-out infinite;
+}
+@keyframes pmkProgressShine {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(260%); }
+}
+
+.slider-value {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,.055);
+  border-color: rgba(255,255,255,.10);
+  animation: pmkSliderBreath 2.8s ease-in-out infinite;
+}
+@keyframes pmkSliderBreath {
+  0%, 100% { box-shadow: 0 0 0 rgba(255,212,0,0); }
+  50% { box-shadow: 0 0 30px rgba(255,212,0,.12); }
+}
+
+.slider {
+  background: linear-gradient(90deg, rgba(255,212,0,.35), rgba(255,255,255,.13));
+}
+.slider::-webkit-slider-thumb {
+  background: #FFD400;
+  box-shadow: 0 0 0 7px rgba(255,212,0,.12), 0 0 24px rgba(255,212,0,.5);
+  transition: transform .18s ease;
+}
+.slider::-webkit-slider-thumb:hover { transform: scale(1.14); }
+.slider::-moz-range-thumb {
+  background: #FFD400;
+  box-shadow: 0 0 0 7px rgba(255,212,0,.12), 0 0 24px rgba(255,212,0,.5);
+}
+
+.btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #FFD400, #FFB000);
+  color: #070707;
+  box-shadow: 0 14px 32px rgba(255, 212, 0, .20);
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -45%;
+  width: 36%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  transform: skewX(-18deg);
+  animation: pmkButtonShine 2.6s ease-in-out infinite;
+}
+@keyframes pmkButtonShine {
+  0%, 45% { left: -48%; opacity: 0; }
+  55% { opacity: 1; }
+  100% { left: 120%; opacity: 0; }
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px rgba(255, 212, 0, .30);
+}
+
+.area-display {
+  background: rgba(255,212,0,.08);
+  border-color: rgba(255,212,0,.25);
+  animation: pmkAreaIn .45s ease both;
+}
+@keyframes pmkAreaIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-hero {
+  animation: pmkResultIn .6s ease both;
+}
+@keyframes pmkResultIn {
+  from { opacity: 0; transform: scale(.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.result-line.grand span:last-child {
+  animation: pmkTotalGlow 1.7s ease-in-out infinite;
+}
+@keyframes pmkTotalGlow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255,212,0,0); }
+  50% { text-shadow: 0 0 22px rgba(255,212,0,.55); }
+}
+
+#screen-1 .btn-ghost {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .pmk-quiz-section {
+    align-items: flex-start;
+    padding: 18px 12px 32px;
+  }
+  .pmk-quiz-layout {
+    grid-template-columns: 1fr;
+  }
+  .quiz-value-panel {
+    padding: 22px;
+    border-radius: 24px;
+  }
+  .quiz-value-panel h2 {
+    max-width: none;
+    font-size: 28px;
+  }
+  .value-lead {
+    font-size: 14px;
+  }
+  .value-price-card {
+    margin: 18px 0;
+  }
+  .value-points {
+    grid-template-columns: 1fr;
+  }
+  .value-hint {
+    display: none;
+  }
+  .quiz-shell {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .pmk-quiz-section {
+    padding: 12px 8px 26px;
+  }
+  .quiz-value-panel {
+    padding: 18px;
+  }
+  .value-trust span {
+    width: 100%;
+  }
+  .option-tile {
+    min-height: 82px;
+    padding: 10px;
+  }
+  .option-icon img {
+    width: 76px !important;
+    height: 76px !important;
+  }
+  .screen-title {
+    font-size: 20px;
+  }
+  .card {
+    border-radius: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+
+/* Расширенное описание допуслуг */
+.option-title {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--text);
+}
+.option-detail {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.72);
+  font-weight: 500;
+}
+.option-hint {
+  display: inline-flex;
+  margin-top: 8px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255, 212, 0, .09);
+  border: 1px solid rgba(255, 212, 0, .18);
+  color: rgba(255, 212, 0, .95);
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+.option-price {
+  color: var(--yellow);
+  font-size: 12px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+.option-icon img {
+  display: block;
+  box-shadow: 0 14px 34px rgba(0,0,0,.32);
+}
+.ozone-service-icon {
+  width: 144px;
+  height: 144px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #080808;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,.92), rgba(255,255,255,.08) 34%, transparent 58%),
+    linear-gradient(135deg, #FFD400, #FF9D00);
+  box-shadow: 0 14px 34px rgba(0,0,0,.32), 0 0 34px rgba(255,212,0,.18);
+  overflow: hidden;
+}
+.ozone-service-icon span {
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+.ozone-service-icon small {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .72;
+}
+.option-tile.multi {
+  min-height: 154px;
+  align-items: flex-start;
+  padding: 10px;
+}
+.option-tile.multi .option-check {
+  margin-top: 4px;
+}
+@media (max-width: 520px) {
+  .option-tile.multi {
+    display: grid;
+    grid-template-columns: 92px 1fr 20px;
+    min-height: auto;
+  }
+  .option-tile.multi .option-icon img {
+    width: 92px !important;
+    height: 92px !important;
+  }
+  .option-tile.multi .ozone-service-icon {
+    width: 92px !important;
+    height: 92px !important;
+  }
+  .option-tile.multi .ozone-service-icon span {
+    font-size: 30px;
+  }
+  .option-tile.multi .ozone-service-icon small {
+    font-size: 9px;
+  }
+}
+
+
+
+/* ===== Финальные правки: спокойный левый блок, плавная цена, легкое описание допуслуг ===== */
+.quiz-value-panel::before,
+.quiz-value-panel::after {
+  display: none !important;
+  content: none !important;
+  animation: none !important;
+}
+.value-price-card {
+  animation: pmkPriceGlowSmooth 7.5s ease-in-out infinite !important;
+  transform: none !important;
+  will-change: box-shadow;
+}
+@keyframes pmkPriceGlowSmooth {
+  0%, 100% { box-shadow: 0 18px 48px rgba(255, 171, 0, .20); }
+  50% { box-shadow: 0 22px 58px rgba(255, 171, 0, .30); }
+}
+.option-detail {
+  font-weight: 400 !important;
+  color: rgba(255,255,255,.68) !important;
+}
+.option-hint {
+  font-weight: 500 !important;
+}
+.option-price {
+  font-weight: 600 !important;
+}
+
+</style>
+</head>
+<body>
+
+<section class="pmk-quiz-section" id="pmk-quiz-calc">
+  <div class="pmk-quiz-layout">
+    <aside class="quiz-value-panel" aria-label="Преимущества калькулятора">
+      <div class="value-kicker">Калькулятор «Промой Ковер»</div>
+      <h2>Узнайте стоимость чистки ковра до заявки</h2>
+      <p class="value-lead">
+        Калькулятор учитывает тип ворса, материал, площадь и дополнительные обработки:
+        запах мочи, пятна, шерсть, кондиционер и подъём ворса.
+      </p>
+
+      <div class="value-price-card">
+        <span class="value-price-label">Стартовая цена</span>
+        <strong>от 350 ₽/м²</strong>
+        <small>лучшая цена в городе</small>
+      </div>
+
+      <div class="value-points">
+        <div><b>01</b><span>Сразу видите предварительную стоимость</span></div>
+        <div><b>02</b><span>Понимаете, какие допуслуги нужны именно вашему ковру</span></div>
+        <div><b>03</b><span>Можно добавить несколько ковров в один расчёт</span></div>
+      </div>
+
+      <div class="value-trust">
+        <span>🚚 Доставка по Нижнему Новгороду — 0 ₽</span>
+        <span>⭐ Постоянным клиентам — скидка 10%</span>
+        <span>🧾 Минимальный заказ — 1 800 ₽</span>
+      </div>
+
+      <div class="value-hint">Начните справа с размеров ковра →</div>
+    </aside>
+
+    <div class="quiz-shell">
+      <div class="quiz-wrapper">
+  <div class="step-label">
+    <span id="step-text">Начало</span>
+    <span id="step-num"></span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <!-- SCREEN 0: Welcome -->
+  <div class="screen" id="screen-0">
+    <div class="card">
+      <div class="welcome-hero">
+        <img src="assets/quiz-img-01.png" alt="ПРОМОЙ КОВЕР" style="max-width:220px;width:70%;margin:0 auto 24px;display:block;">
+        <div class="welcome-title">Рассчитайте стоимость<br><span>чистки ковра</span></div>
+        <div class="welcome-desc">Ответьте на несколько вопросов — и мы мгновенно назовём точную цену. Без звонков и ожидания.</div>
+        <div class="welcome-features">
+          <div class="wf-item"><span>⚡</span>За 2 минуты</div>
+          <div class="wf-item"><span>💰</span>Точная цена</div>
+          <div class="wf-item"><span>🔄</span>Любые ковры</div>
+          <div class="wf-item"><span>🚚</span>Доставка 0 ₽</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:12px;" onclick="startQuiz()">
+          Рассчитать стоимость →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: Dimensions -->
+  <div class="screen active" id="screen-1">
+    <div class="card">
+      <div class="screen-title">Размеры ковра</div>
+      <div class="screen-sub">Сначала укажите ширину и длину в метрах. Длина — до 8 м.</div>
+      <div class="size-inputs">
+        <div class="input-group">
+          <label>Ширина (м)</label>
+          <div class="slider-container">
+            <div class="slider-value" id="width-display">2.0</div>
+            <input type="range" class="slider" id="inp-width" min="0.5" max="4" step="0.1" value="2" oninput="updateSliders()">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Длина (м)</label>
+          <div class="slider-container">
+            <div class="slider-value" id="length-display">3.0</div>
+            <input type="range" class="slider" id="inp-length" min="0.5" max="8" step="0.1" value="3" oninput="updateSliders()">
+          </div>
+        </div>
+      </div>
+      <div class="area-display">
+        <span>Площадь ковра</span>
+        <span id="area-display">6.00 м²</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goBack()">← Назад</button>
+        <button class="btn btn-primary" onclick="goToTypeStep()">Выбрать тип ковра →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Type of cleaning -->
+  <div class="screen" id="screen-2">
+    <div class="card">
+      <div class="screen-title">Какой тип вашего ковра?</div>
+      <div class="screen-sub">Выберите подходящий вариант — это влияет на метод чистки и цену</div>
+      <div class="options-grid single" id="type-options"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goBack()">← Назад</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Options -->
+  <div class="screen" id="screen-3">
+    <div class="card">
+      <div class="screen-title">Дополнительные услуги</div>
+      <div class="screen-sub">Можно выбрать несколько вариантов</div>
+      <div class="options-grid single" id="extras-options"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goBack()">← Назад</button>
+        <button class="btn btn-primary" onclick="addCurrentRug()">Добавить ковёр ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: More rugs? -->
+  <div class="screen" id="screen-4">
+    <div class="card">
+      <div class="screen-title">Ковры добавлены</div>
+      <div class="screen-sub">Добавьте ещё ковры или переходите к оформлению</div>
+      <div class="rugs-added" id="rugs-added"></div>
+      <div class="btn-row" style="flex-direction:column; gap:10px;">
+        <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="addMoreRug()">+ Добавить ещё ковёр</button>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="showResult()">Узнать стоимость →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: Contacts -->
+  <div class="screen" id="screen-5">
+    <div class="card">
+      <div class="screen-title">Ваши контакты</div>
+      <div class="screen-sub">Для подтверждения заказа и уточнения деталей</div>
+      <div class="contact-inputs">
+        <div class="contact-field">
+          <label>Имя</label>
+          <input type="text" id="inp-name" placeholder="Иван Иванов">
+        </div>
+        <div class="contact-field">
+          <label>Телефон</label>
+          <input type="tel" id="inp-phone" placeholder="+7 900 000-00-00">
+        </div>
+        <div class="contact-field">
+          <label>Адрес доставки (с подъездом и этажом)</label>
+          <input type="text" id="inp-email" placeholder="ул. Звездинка, д. 5, подъезд 2, этаж 3, кв. 25">
+        </div>
+      </div>
+      <div class="loyal-toggle" id="loyal-toggle" onclick="toggleLoyal()">
+        <span class="loyal-icon">⭐</span>
+        <div class="loyal-text">
+          <strong>У вас уже был заказ?</strong>
+          <span>Скидка 10% применяется после проверки по базе</span>
+        </div>
+        <div class="toggle-sw" id="toggle-sw"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goBack()">← Назад</button>
+        <button class="btn btn-primary" onclick="submitOrder()">Отправить заявку ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 6: Result -->
+  <div class="screen" id="screen-6">
+    <div class="card">
+      <div class="result-hero">
+        <div class="pulsing-star">★</div>
+        <div class="result-title" id="result-title">Расчёт готов!</div>
+        <div class="result-sub" id="result-sub">Предварительная стоимость заказа</div>
+      </div>
+      <div class="result-lines" id="result-lines"></div>
+      <div class="min-notice" id="min-notice"></div>
+    </div>
+    <div style="display:flex; gap:12px; margin-top:4px;" id="result-actions">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="restartQuiz()">Новый расчёт</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" id="btn-order" onclick="goToContacts()">Оформить заказ →</button>
+    </div>
+    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted);">
+      * Стоимость предварительная. Окончательная цена уточняется в цеху.
+    </div>
+  </div>
+
+</div>
+    </div>
+  </div>
+</section>
+
+<script>
+// ===== PRICES =====
+var PRICES = {
+  base: {
+    'Безворсные (синтетика)': { price: 300, icon: '<img src="assets/quiz-img-02.jpg" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">',  desc: 'Синтетика, безворсовые' },
+    'Средний ворс (синтетика)': { price: 350, icon: '<img src="assets/quiz-img-03.jpg" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">',  desc: 'Синтетика, ворс до 1 см' },
+    'Средний ворс (шерсть)': { price: 400, icon: '<img src="assets/quiz-img-04.jpg" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">', desc: 'Шерсть, ворс до 1 см' },
+    'Высокий ворс (любой материал)': { price: 450, icon: '<img src="assets/quiz-img-05.jpg" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">', desc: 'Ворс более 1 см, любой материал' },
+    'Деликатные ткани (вискоза/шёлк/хлопок)': { price: 800, icon: '<img src="assets/quiz-img-06.png" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">', desc: 'Вискоза, шёлк, хлопок' },
+  },
+  conditioner_per_rug: 350,
+  odor_removal_per_rug: 700,
+  odor_removal_large: 1000,
+  odor_area_threshold: 6,
+  pet_hair_per_m2: 150,
+  stain_per_rug: 600,  // Объединенная цена для пятен
+  pile_lift_per_m2: 150,
+  ozonation_per_rug: 300,
+  min_order: 1800,
+  delivery: 0,
+  loyal_percent: 10,
+  tiers: [{ min: 2, pct: 5 }, { min: 3, pct: 10 }]
+};
+
+var EXTRAS = [
+  { key: 'conditioner', label: 'Кондиционер для ковра', desc: 'После основной стирки помогает нейтрализовать остатки моющего средства, делает ворс мягче и приятнее на ощупь. Особенно рекомендуем для детских, шерстяных и ковров с длинным ворсом.', icon: '<img src="assets/quiz-img-07.png" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">', priceStr: '+350 ₽/ковёр', hint: 'Мягкость ворса и лёгкий свежий аромат' },
+  { key: 'odor', label: 'Удаление запаха мочи', desc: 'Это отдельная обработка источника запаха, а не маскировка ароматизатором. Состав выдерживается, растворяет пахнущие соединения в ворсе и основании, затем ковёр промывается.', icon: '<img src="assets/quiz-img-08.png" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">', priceStr: '+700 ₽ до 6 м² / +1000 ₽ более 6 м²', hint: 'Важно при моче детей, кошек и собак' },
+  { key: 'pet_hair', label: 'Вычёсывание шерсти животных', desc: 'Шерсть часто забивается глубоко в ворс и не выходит полностью при обычной стирке. Механизированное вычёсывание помогает убрать волосы из глубины ковра.', icon: '<img src="assets/quiz-img-09.png" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">', priceStr: '+150 ₽/м²', hint: 'Для ковров после животных' },
+  { key: 'stain', label: 'Удаление пятен', desc: 'Отдельная работа со сложными пятнами: слаймы, маркеры, пластилин, пищевые и другие загрязнения. По пятнам даём честную гарантию до 95%, потому что старые пигменты могут закрепиться в волокне.', icon: '<img src="assets/quiz-img-10.png" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">', priceStr: '+600 ₽/ковёр', hint: 'Сложные пятна обрабатываются отдельно' },
+  { key: 'ozonation', label: 'Озонация ковра', desc: 'Дополнительная обработка озоном после стирки и сушки. Помогает освежить ковёр, снизить остаточные запахи и дополнительно обработать ворс от бактерий, клещей и аллергенов.', icon: '<div class="ozone-service-icon"><span>O₃</span><small>ozone</small></div>', priceStr: '+300 ₽/ковёр', hint: 'Рекомендуем для детских ковров, ковров после животных и при запахах' },
+  { key: 'pile_lift', label: 'Расчёсывание и поднятие ворса', desc: 'После стирки длинный ворс может спутаться и лечь неравномерно. Расчёсывание помогает поднять ворс, уложить его аккуратнее и вернуть ковру более эстетичный вид.', icon: '<img src="assets/quiz-img-11.jpg" style="width:144px;height:144px;object-fit:cover;border-radius:12px;flex-shrink:0;">', priceStr: '+150 ₽/м²', hint: 'Рекомендуем для высокого ворса' }
+];
+
+// ===== STATE =====
+var state = {
+  currentScreen: 1,
+  history: [1],
+  rugs: [],
+  // current rug being configured
+  cur: { type: null, width: 2, length: 3, extras: {} },
+  isLoyal: false,
+  name: '', phone: '', email: ''
+};
+
+var TOTAL_STEPS = 6;
+
+function updateProgress() {
+  var s = state.currentScreen;
+  var labels = ['', 'Размеры', 'Тип ковра', 'Опции', 'Список ковров', 'Контакты', 'Итог'];
+  var pct = s === 0 ? 0 : Math.round((s / TOTAL_STEPS) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('step-text').textContent = labels[s] || '';
+  document.getElementById('step-num').textContent = s > 0 ? 'Шаг ' + s + ' из ' + TOTAL_STEPS : '';
+}
+
+
+function scrollQuizIntoView() {
+  var isMobile = window.matchMedia && window.matchMedia('(max-width: 980px)').matches;
+  var target = isMobile ? document.querySelector('.quiz-shell') : document.getElementById('pmk-quiz-calc');
+  if (!target) return;
+
+  var offset = isMobile ? 10 : 20;
+  var currentY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  var targetY = Math.max(target.getBoundingClientRect().top + currentY - offset, 0);
+
+  try {
+    window.scrollTo({ top: targetY, behavior: 'smooth' });
+  } catch (e) {
+    window.scrollTo(0, targetY);
+  }
+}
+
+function showScreen(n, isBack) {
+  var screens = document.querySelectorAll('.screen');
+  screens.forEach(function(sc) { sc.classList.remove('active', 'back'); });
+  var target = document.getElementById('screen-' + n);
+  if (isBack) target.classList.add('back');
+  target.classList.add('active');
+  state.currentScreen = n;
+  
+  // Hide/show progress bar
+  var wrapper = document.querySelector('.quiz-wrapper');
+  if (n === 0) {
+    wrapper.classList.add('welcome-screen');
+  } else {
+    wrapper.classList.remove('welcome-screen');
+  }
+  
+  updateProgress();
+  requestAnimationFrame(scrollQuizIntoView);
+}
+
+function goBack() {
+  if (state.history.length > 1) {
+    state.history.pop();
+    var prev = state.history[state.history.length - 1];
+    showScreen(prev, true);
+  }
+}
+
+function goNext() {
+  var next = state.currentScreen + 1;
+  state.history.push(next);
+  showScreen(next);
+}
+
+function startQuiz() {
+  updateSliders();
+  state.history = [1];
+  showScreen(1);
+}
+
+function goToTypeStep() {
+  updateSliders();
+  renderTypeOptions();
+  state.history.push(2);
+  showScreen(2);
+}
+
+// ===== SCREEN 1: Type =====
+function renderTypeOptions() {
+  var cont = document.getElementById('type-options');
+  cont.innerHTML = '';
+  var keys = Object.keys(PRICES.base);
+  keys.forEach(function(k) {
+    var info = PRICES.base[k];
+    var tile = document.createElement('div');
+    tile.className = 'option-tile' + (state.cur.type === k ? ' selected' : '');
+    
+    // Применяем фоновое изображение, если оно есть
+    if (info.bgImage) {
+      tile.style.backgroundImage = 'url(' + info.bgImage + ')';
+      tile.style.backgroundSize = '50%';
+      tile.style.backgroundPosition = 'center';
+      tile.style.backgroundRepeat = 'no-repeat';
+    }
+    
+    tile.innerHTML =
+      '<span class="option-icon">' + info.icon + '</span>' +
+      '<div class="option-text"><div>' + k + '</div><div class="option-price">' + info.desc + '</div></div>' +
+      '<div class="option-check">' + (state.cur.type === k ? '✓' : '') + '</div>';
+    tile.onclick = function() {
+      state.cur.type = k;
+      renderTypeOptions();
+      setTimeout(function() { renderExtrasOptions(); state.history.push(3); showScreen(3); }, 180);
+    };
+    cont.appendChild(tile);
+  });
+}
+
+// ===== SCREEN 2: Size =====
+function updateSliders() {
+  var w = parseFloat(document.getElementById('inp-width').value) || 0;
+  var l = parseFloat(document.getElementById('inp-length').value) || 0;
+  state.cur.width = w;
+  state.cur.length = l;
+  
+  // Обновляем отображение значений
+  document.getElementById('width-display').textContent = w.toFixed(1);
+  document.getElementById('length-display').textContent = l.toFixed(1);
+  
+  // Обновляем площадь
+  document.getElementById('area-display').textContent = (w * l).toFixed(2) + ' м²';
+}
+
+function updateArea() {
+  updateSliders();
+}
+
+// ===== SCREEN 3: Extras =====
+function renderExtrasOptions() {
+  var cont = document.getElementById('extras-options');
+  cont.innerHTML = '';
+  EXTRAS.forEach(function(ex) {
+    var sel = !!state.cur.extras[ex.key];
+    var tile = document.createElement('div');
+    tile.className = 'option-tile multi' + (sel ? ' selected' : '');
+    tile.innerHTML =
+      '<span class="option-icon">' + ex.icon + '</span>' +
+      '<div class="option-text">' +
+        '<div class="option-title">' + ex.label + '</div>' +
+        '<div class="option-price">' + ex.priceStr + '</div>' +
+        '<div class="option-detail">' + ex.desc + '</div>' +
+        '<div class="option-hint">' + ex.hint + '</div>' +
+      '</div>' +
+      '<div class="option-check" id="check-' + ex.key + '">' + (sel ? '✓' : '') + '</div>';
+    tile.onclick = function() {
+      state.cur.extras[ex.key] = !state.cur.extras[ex.key];
+      renderExtrasOptions();
+    };
+    cont.appendChild(tile);
+  });
+}
+
+// ===== Rug calc =====
+function calcRug(rug) {
+  var area = rug.width * rug.length;
+  var base = PRICES.base[rug.type].price;
+  
+  // Автоматическое повышение цены для средний ворс синтетика при ширине ≥3м
+  if (rug.type === 'Средний ворс (синтетика)' && rug.width >= 3) {
+    base = 450; // Повышенная цена для широких ковров
+  }
+  
+  var total = base * area;
+  var extras = [];
+  if (rug.extras.conditioner) { total += PRICES.conditioner_per_rug; extras.push('Кондиционер'); }
+  if (rug.extras.odor)        { var odorPrice = area <= PRICES.odor_area_threshold ? PRICES.odor_removal_per_rug : PRICES.odor_removal_large; total += odorPrice; extras.push('Удал. запаха'); }
+  if (rug.extras.pet_hair)    { total += PRICES.pet_hair_per_m2 * area; extras.push('Шерсть жив.'); }
+  if (rug.extras.stain)       { total += PRICES.stain_per_rug; extras.push('Пятна'); }
+  if (rug.extras.pile_lift)   { total += PRICES.pile_lift_per_m2 * area; extras.push('Подъём ворса'); }
+  if (rug.extras.ozonation)   { total += PRICES.ozonation_per_rug; extras.push('Озонация'); }
+  return { total: Math.round(total), area: area.toFixed(2), extras: extras };
+}
+
+function fmt(n) { return new Intl.NumberFormat('ru-RU').format(Math.round(n)); }
+
+// ===== Add rug =====
+function addCurrentRug() {
+  if (!state.cur.type) { alert('Выберите тип ковра'); return; }
+  var w = parseFloat(document.getElementById('inp-width').value) || 0;
+  var l = parseFloat(document.getElementById('inp-length').value) || 0;
+  if (w <= 0 || l <= 0) { alert('Укажите корректные размеры'); return; }
+  state.cur.width = w;
+  state.cur.length = l;
+  state.rugs.push(JSON.parse(JSON.stringify(state.cur)));
+  // reset cur
+  state.cur = { type: null, width: 2, length: 3, extras: {} };
+  renderRugList();
+  state.history.push(4);
+  showScreen(4);
+}
+
+function addMoreRug() {
+  state.cur = { type: null, width: 2, length: 3, extras: {} };
+  updateSliders();
+  state.history.push(1);
+  showScreen(1);
+}
+
+function renderRugList() {
+  var cont = document.getElementById('rugs-added');
+  cont.innerHTML = '';
+  state.rugs.forEach(function(rug, i) {
+    var info = calcRug(rug);
+    var chip = document.createElement('div');
+    chip.className = 'rug-chip';
+    var extStr = info.extras.length ? ' · ' + info.extras.join(', ') : '';
+    chip.innerHTML =
+      '<div class="rug-chip-info">' +
+        '<div class="rug-chip-title">' + PRICES.base[rug.type].icon + ' Ковёр #' + (i+1) + ' · ' + rug.width + '×' + rug.length + ' м (' + info.area + ' м²)</div>' +
+        '<div class="rug-chip-sub">' + rug.type + extStr + '</div>' +
+      '</div>' +
+      '<div class="rug-chip-price">' + fmt(info.total) + ' ₽</div>' +
+      '<button class="rug-chip-del" onclick="removeRug(' + i + ')">✕</button>';
+    cont.appendChild(chip);
+  });
+}
+
+function removeRug(i) {
+  state.rugs.splice(i, 1);
+  if (state.rugs.length === 0) {
+    state.history = [1];
+    updateSliders();
+    showScreen(1, true);
+  } else {
+    renderRugList();
+  }
+}
+
+// ===== Contacts =====
+function goToContacts() {
+  state.history.push(5);
+  showScreen(5);
+}
+
+function toggleLoyal() {
+  state.isLoyal = !state.isLoyal;
+  var el = document.getElementById('loyal-toggle');
+  if (state.isLoyal) el.classList.add('on'); else el.classList.remove('on');
+}
+
+// ===== Result =====
+function getDiscountPct() {
+  if (state.isLoyal) return PRICES.loyal_percent;
+  var best = 0;
+  PRICES.tiers.forEach(function(t) { if (state.rugs.length >= t.min && t.pct > best) best = t.pct; });
+  return best;
+}
+
+function showResult() {
+  var servicesTotal = state.rugs.reduce(function(acc, rug) { return acc + calcRug(rug).total; }, 0);
+  var discPct = getDiscountPct();
+  var discAmt = Math.round(servicesTotal * discPct / 100);
+  var afterDisc = servicesTotal - discAmt;
+  var grand = Math.max(afterDisc + PRICES.delivery, PRICES.min_order);
+  var appliedMin = grand - (afterDisc + PRICES.delivery);
+
+  var lines = document.getElementById('result-lines');
+  lines.innerHTML = '';
+
+  // Per-rug lines
+  state.rugs.forEach(function(rug, i) {
+    var info = calcRug(rug);
+    var extStr = info.extras.length ? ' + ' + info.extras.join(', ') : '';
+    addLine(lines, PRICES.base[rug.type].icon + ' Ковёр #' + (i+1) + ' ' + rug.width + '×' + rug.length + ' м' + extStr, fmt(info.total) + ' ₽', '');
+  });
+
+  addLine(lines, 'Сумма', fmt(servicesTotal) + ' ₽', '');
+
+  if (discPct > 0) {
+    var reason = state.isLoyal ? 'повторный заказ' : state.rugs.length + ' ковра/ковров';
+    addLine(lines, 'Скидка ' + discPct + '% (' + reason + ')', '−' + fmt(discAmt) + ' ₽', 'discount');
+  }
+
+  addLine(lines, 'Доставка (по городу)', fmt(PRICES.delivery) + ' ₽', '');
+
+  var sep = document.createElement('div');
+  sep.style.cssText = 'border-top:2px solid var(--border);margin:8px 0;';
+  lines.appendChild(sep);
+
+  addLine(lines, 'Стоимость работ составит', fmt(grand) + ' ₽', 'grand');
+
+  var minEl = document.getElementById('min-notice');
+  if (appliedMin > 0) {
+    minEl.style.display = 'block';
+    minEl.textContent = 'Применён минимальный заказ ' + fmt(PRICES.min_order) + ' ₽. Доплата: ' + fmt(appliedMin) + ' ₽.';
+  } else {
+    minEl.style.display = 'none';
+  }
+
+  // Заголовок результата без имени (имя будет добавлено позже в контактах)
+  document.getElementById('result-title').textContent = 'Расчёт готов!';
+
+  state.history.push(6);
+  showScreen(6);
+}
+
+function addLine(cont, label, value, cls) {
+  var div = document.createElement('div');
+  div.className = 'result-line' + (cls ? ' ' + cls : '');
+  div.innerHTML = '<span>' + label + '</span><span>' + value + '</span>';
+  cont.appendChild(div);
+}
+
+// syncUcalc удалена - больше не используется
+
+function submitOrder() {
+  // Собираем контактные данные
+  state.name = document.getElementById('inp-name').value.trim();
+  state.phone = document.getElementById('inp-phone').value.trim();
+  state.email = document.getElementById('inp-email').value.trim();
+
+  // Проверяем обязательные поля
+  if (!state.name || !state.phone) {
+    alert('Пожалуйста, укажите имя и телефон для оформления заказа');
+    return;
+  }
+
+  // Пересчитываем итог с учётом актуальных данных
+  var servicesTotal = state.rugs.reduce(function(acc, rug) { return acc + calcRug(rug).total; }, 0);
+  var discPct = getDiscountPct();
+  var discAmt = Math.round(servicesTotal * discPct / 100);
+  var afterDisc = servicesTotal - discAmt;
+  var grand = Math.max(afterDisc + PRICES.delivery, PRICES.min_order);
+  var appliedMin = grand - (afterDisc + PRICES.delivery);
+
+  // Формируем данные для отправки в Google Apps Script → MAX
+  var rugsData = state.rugs.map(function(rug, i) {
+    var info = calcRug(rug);
+    return {
+      number: i + 1,
+      width: rug.width,
+      length: rug.length,
+      area: info.area,
+      type: rug.type,
+      extras: info.extras,
+      total: info.total
+    };
+  });
+
+  var orderData = {
+    name: state.name,
+    phone: state.phone,
+    address: state.email || '', // используем поле email как адрес
+    rugs: rugsData,
+    servicesTotal: servicesTotal,
+    discount: discAmt,
+    discountPercent: discPct,
+    delivery: PRICES.delivery,
+    minOrderAdjustment: appliedMin,
+    total: grand,
+    timestamp: new Date().toISOString()
+  };
+
+  // URL Google Apps Script
+  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPtjIMCq7uYlvIKyiTeAXDoRIXPsUzwKShYJatM3aONmwaS8YgsdP-F_awi83zBxQm3g/exec';
+
+  // Показываем индикатор загрузки
+  var resultTitle = document.getElementById('result-title');
+  var resultSub = document.getElementById('result-sub');
+  resultTitle.textContent = 'Отправка заявки...';
+  resultSub.textContent = 'Пожалуйста, подождите';
+  state.history.push(6);
+  showScreen(6);
+
+  // Отправляем данные
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors', // Google Apps Script требует no-cors
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(orderData)
+  })
+  .then(function() {
+    // no-cors не даёт читать response
+    // Показываем успех с небольшой задержкой для визуального эффекта
+    setTimeout(function() {
+      resultTitle.textContent = state.name + ', заявка принята! ✓';
+      resultSub.textContent = 'Мы свяжемся с вами в ближайшее время по номеру ' + state.phone;
+      // Скрываем кнопку "Оформить заказ" - заявка уже отправлена
+      document.getElementById('btn-order').style.display = 'none';
+    }, 500);
+  })
+  .catch(function(error) {
+    // Ошибка отправки (только если совсем не удалось отправить)
+    console.error('Ошибка отправки заявки:', error);
+    resultTitle.textContent = '⚠️ Ошибка отправки';
+    resultSub.textContent = 'Позвоните нам напрямую: +7 (904) 929-35-45 или напишите в VK';
+  });
+}
+
+function restartQuiz() {
+  state = { currentScreen: 1, history: [1], rugs: [], cur: { type: null, width: 2, length: 3, extras: {} }, isLoyal: false, name: '', phone: '', email: '' };
+  var loyalToggle = document.getElementById('loyal-toggle');
+  if (loyalToggle) loyalToggle.classList.remove('on');
+  document.getElementById('btn-order').style.display = 'inline-flex';
+  updateSliders();
+  showScreen(1, true);
+}
+
+
+updateSliders();
+renderTypeOptions();
+updateProgress();
+
+// Инициализируем слайдеры при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+  updateSliders();
+});
+
+// Не прокручиваем страницу принудительно: в Tilda это уводит пользователя к началу блока.
+</script>
+
+<script>
+(function(){
+  function sendHeight(){
+    try {
+      var h = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight
+      );
+      parent.postMessage({ type: 'pmk-quiz-height', height: h }, '*');
+    } catch(e) {}
+  }
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+  var mo = new MutationObserver(function(){ setTimeout(sendHeight, 60); });
+  mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+  var oldShowScreen = window.showScreen;
+  if (typeof oldShowScreen === 'function') {
+    window.showScreen = function(n, isBack){
+      oldShowScreen(n, isBack);
+      setTimeout(sendHeight, 80);
+      try { parent.postMessage({ type: 'pmk-quiz-step', step: n }, '*'); } catch(e) {}
+    };
+  }
+})();
+</script>
+</body>
+</html>
