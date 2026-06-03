@@ -13,6 +13,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    background: transparent;
+  }
+
   :root {
     --yellow: #F5C518;
     --dark: #0e0e0e;
@@ -1010,13 +1017,18 @@ body {
     padding: 18px 12px 28px;
   }
   .pmk-quiz-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
   }
   .quiz-shell {
-    order: 1;
+    order: 2;
   }
   .quiz-value-panel {
-    order: 2;
+    order: 1;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
   .quiz-value-panel {
     padding: 18px;
@@ -1049,25 +1061,52 @@ body {
     padding: 8px 0;
   }
   .pmk-quiz-section {
-    width: 100%;
+    width: calc(100% - 24px);
     max-width: 100vw;
     padding: 8px 0 20px;
     border-radius: 22px;
-    transform: scale(.86);
-    transform-origin: top left;
-    width: calc(100% / .86);
+    margin: 0 auto;
   }
   .quiz-wrapper,
   .quiz-shell,
   .pmk-quiz-layout,
+  .quiz-value-panel,
   .screen,
   .card {
     width: 100%;
-    max-width: calc(100vw - 16px);
+    max-width: 100%;
     min-width: 0;
   }
+  .quiz-shell,
+  .quiz-wrapper,
+  .screen,
   .card {
-    padding: 16px 12px;
+    overflow-x: hidden;
+  }
+  .card {
+    padding: 16px 14px;
+  }
+  .quiz-value-panel h2,
+  .screen-title,
+  .screen-sub,
+  .value-lead,
+  .value-points span {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+  .quiz-value-panel h2 {
+    font-size: 18px;
+    line-height: 1.18;
+    letter-spacing: 0;
+    text-wrap: balance;
+  }
+  .step-label {
+    padding: 0 2px;
+    gap: 12px;
+  }
+  .step-label span:last-child {
+    white-space: nowrap;
   }
   .size-inputs {
     grid-template-columns: 1fr !important;
@@ -1096,8 +1135,15 @@ body {
   .value-points div {
     grid-template-columns: 30px 1fr;
     gap: 8px;
-    padding: 10px 12px;
+    padding: 9px 10px;
     border-radius: 15px;
+    min-width: 0;
+  }
+  .value-points span {
+    font-size: 12px;
+    line-height: 1.3;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .value-hint {
     display: none;
@@ -1929,7 +1975,10 @@ document.addEventListener('DOMContentLoaded', function() {
     window.showScreen = function(n, isBack){
       oldShowScreen(n, isBack);
       setTimeout(sendHeight, 80);
-      try { parent.postMessage({ type: 'pmk-quiz-step', step: n }, '*'); } catch(e) {}
+      var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+      if (!isMobile) {
+        try { parent.postMessage({ type: 'pmk-quiz-step', step: n }, '*'); } catch(e) {}
+      }
     };
   }
 })();
