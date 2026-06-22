@@ -1379,14 +1379,14 @@ body {
           <label>Ширина (м)</label>
           <div class="slider-container">
             <div class="slider-value" id="width-display">2.0</div>
-            <input type="range" class="slider" id="inp-width" min="0.5" max="4" step="0.1" value="2" oninput="updateSliders()">
+            <input type="range" class="slider" id="inp-width" min="0.5" max="4" step="0.1" value="2" oninput="updateSliders(this)">
           </div>
         </div>
         <div class="input-group">
           <label>Длина (м)</label>
           <div class="slider-container">
             <div class="slider-value" id="length-display">3.0</div>
-            <input type="range" class="slider" id="inp-length" min="0.5" max="8" step="0.1" value="3" oninput="updateSliders()">
+            <input type="range" class="slider" id="inp-length" min="0.5" max="8" step="0.1" value="3" oninput="updateSliders(this)">
           </div>
         </div>
       </div>
@@ -1649,7 +1649,16 @@ function renderTypeOptions() {
 }
 
 // ===== SCREEN 2: Size =====
-function updateSliders() {
+function vibrateSliderStep(slider) {
+  if (!slider) return;
+  var value = slider.value;
+  if (slider.dataset.pmkHapticValue === value) return;
+  slider.dataset.pmkHapticValue = value;
+  if (typeof navigator.vibrate === 'function') navigator.vibrate(10);
+}
+
+function updateSliders(sourceSlider) {
+  vibrateSliderStep(sourceSlider);
   var w = parseFloat(document.getElementById('inp-width').value) || 0;
   var l = parseFloat(document.getElementById('inp-length').value) || 0;
   state.cur.width = w;
