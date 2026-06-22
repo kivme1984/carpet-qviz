@@ -6,6 +6,7 @@
 (function(){
   var frame = document.getElementById('pmk-quiz-frame');
   window.addEventListener('message', function(e){
+    if(!frame || e.source !== frame.contentWindow) return;
     if(!e.data || typeof e.data !== 'object') return;
     if(e.data.type === 'pmk-quiz-height' && frame){
       var h = Math.max(760, Math.min(2400, Number(e.data.height || 980)));
@@ -13,6 +14,9 @@
     }
     if(e.data.type === 'pmk-quiz-step' && frame && window.innerWidth <= 768){
       setTimeout(function(){ frame.scrollIntoView({behavior:'smooth', block:'start'}); }, 80);
+    }
+    if(e.data.type === 'pmk-quiz-slider-haptic' && typeof navigator.vibrate === 'function'){
+      navigator.vibrate(20);
     }
   });
 })();

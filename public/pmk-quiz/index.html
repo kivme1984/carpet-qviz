@@ -1654,7 +1654,11 @@ function vibrateSliderStep(slider) {
   var value = slider.value;
   if (slider.dataset.pmkHapticValue === value) return;
   slider.dataset.pmkHapticValue = value;
-  if (typeof navigator.vibrate === 'function') navigator.vibrate(10);
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'pmk-quiz-slider-haptic' }, '*');
+  } else if (typeof navigator.vibrate === 'function') {
+    navigator.vibrate(20);
+  }
 }
 
 function updateSliders(sourceSlider) {
