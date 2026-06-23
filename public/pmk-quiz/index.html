@@ -1657,7 +1657,7 @@ function vibrateSliderStep(slider) {
   if (window.parent && window.parent !== window) {
     window.parent.postMessage({ type: 'pmk-quiz-slider-haptic' }, '*');
   } else if (typeof navigator.vibrate === 'function') {
-    navigator.vibrate(20);
+    navigator.vibrate(10);
   }
 }
 
