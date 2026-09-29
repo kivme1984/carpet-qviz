@@ -1305,6 +1305,10 @@ body {
 }
 
 </style>
+
+<style id="pmk-result-trust-styles">
+.result-trust-card{margin-top:20px;padding:18px;border:1px solid rgba(85,190,120,.3);border-radius:16px;background:rgba(85,190,120,.07);color:var(--text);font-size:13px;line-height:1.55}.result-trust-card p{margin:0 0 10px}.result-trust-card__check{color:#9be0ae;font-weight:800}.result-trust-card>strong{display:block;margin-top:10px;color:#fff;font-size:14px}.result-trust-card details{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}.result-trust-card summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700}.result-trust-card details p{margin:6px 0 0;color:var(--muted)}.pmk-problem-context{display:none;margin:14px 0 0;padding:10px 12px;border-left:3px solid var(--yellow);border-radius:0 8px 8px 0;background:rgba(245,197,24,.08);color:var(--text);font-size:13px;line-height:1.4}.pmk-problem-context.is-visible{display:block}@media(max-width:520px){#result-actions{flex-direction:column!important}#result-actions .btn{min-height:48px;width:100%}.result-trust-card{padding:15px;font-size:12px}}
+</style>
 </head>
 <body>
 
@@ -1312,21 +1316,20 @@ body {
   <div class="pmk-quiz-layout">
     <aside class="quiz-value-panel" aria-label="Преимущества калькулятора">
       <div class="value-kicker">Калькулятор «Промой Ковер»</div>
-      <h2>Узнайте стоимость чистки ковра до заявки</h2>
+      <h2>Расчёт по вашим данным</h2>
       <p class="value-lead">
-        Калькулятор учитывает тип ворса, материал, площадь и дополнительные обработки:
-        запах мочи, пятна, шерсть, кондиционер и подъём ворса.
+        Укажите размеры, материал и нужные обработки. Калькулятор покажет состав расчёта и стоимость по введённым данным.
       </p>
 
       <div class="value-price-card">
-        <span class="value-price-label">Стартовая цена</span>
+        <span class="value-price-label">Базовая стоимость стирки</span>
         <strong>от 350 ₽/м²</strong>
-        <small>лучшая цена в городе</small>
+        <small>Фабричная стирка ковра</small>
       </div>
 
       <div class="value-points">
-        <div><b>01</b><span>Сразу видите предварительную стоимость</span></div>
-        <div><b>02</b><span>Понимаете, какие допуслуги нужны именно вашему ковру</span></div>
+        <div><b>01</b><span>Получаете расчёт по своим данным</span></div>
+        <div><b>02</b><span>Видите выбранные обработки и их стоимость</span></div>
         <div><b>03</b><span>Можно добавить несколько ковров в один расчёт</span></div>
       </div>
 
@@ -1355,10 +1358,10 @@ body {
       <div class="welcome-hero">
         <img src="assets/quiz-img-01.png" alt="ПРОМОЙ КОВЕР" style="max-width:220px;width:70%;margin:0 auto 24px;display:block;">
         <div class="welcome-title">Рассчитайте стоимость<br><span>чистки ковра</span></div>
-        <div class="welcome-desc">Ответьте на несколько вопросов — и мы мгновенно назовём точную цену. Без звонков и ожидания.</div>
+        <div class="welcome-desc">Ответьте на несколько вопросов — и получите расчёт по вашим данным.</div>
         <div class="welcome-features">
           <div class="wf-item"><span>⚡</span>За 2 минуты</div>
-          <div class="wf-item"><span>💰</span>Точная цена</div>
+          <div class="wf-item"><span>💰</span>Расчёт по данным</div>
           <div class="wf-item"><span>🔄</span>Любые ковры</div>
           <div class="wf-item"><span>🚚</span>Доставка 0 ₽</div>
         </div>
@@ -1478,19 +1481,26 @@ body {
     <div class="card">
       <div class="result-hero">
         <div class="pulsing-star">★</div>
-        <div class="result-title" id="result-title">Расчёт готов!</div>
-        <div class="result-sub" id="result-sub">Предварительная стоимость заказа</div>
+        <div class="result-title" id="result-title">Расчёт по вашим данным</div>
+        <div class="result-sub" id="result-sub">Если указанные данные совпадут после приёмки, цена не изменится.</div>
       </div>
       <div class="result-lines" id="result-lines"></div>
       <div class="min-notice" id="min-notice"></div>
+      <div class="result-trust-card" aria-live="polite">
+        <p class="result-trust-card__check">Если указанные данные совпадут после приёмки — цена не изменится.</p>
+        <p>На фабрике проверим фактический размер, материал и состояние ковра. Если размер окажется меньше — стоимость уменьшится. Если потребуется дополнительная обработка — сначала сообщим стоимость и получим ваше согласие.</p>
+        <strong>Без вашего согласия никаких дополнительных услуг и доплат.</strong>
+        <details>
+          <summary>Почему цена проверяется после приёмки?</summary>
+          <p>Размер ковра часто указывают приблизительно, а материал и некоторые загрязнения можно точно определить только при осмотре. Поэтому перед началом работ мы проверяем данные и фиксируем итоговую стоимость.</p>
+        </details>
+      </div>
     </div>
     <div style="display:flex; gap:12px; margin-top:4px;" id="result-actions">
       <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="restartQuiz()">Новый расчёт</button>
-      <button class="btn btn-primary" style="flex:1;justify-content:center;" id="btn-order" onclick="goToContacts()">Оформить заказ →</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" id="btn-order" onclick="goToContacts()">Оформить забор ковра →</button>
     </div>
-    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted);">
-      * Стоимость предварительная. Окончательная цена уточняется в цеху.
-    </div>
+
   </div>
 
 </div>
@@ -1498,6 +1508,20 @@ body {
   </div>
 </section>
 
+
+<script id="pmk-selected-problem-context">
+(function(){
+  function setProblem(value){
+    var name=String(value||'').trim();if(!name)return;
+    var lead=document.querySelector('.value-lead');if(!lead)return;
+    var note=document.getElementById('pmk-problem-context');
+    if(!note){note=document.createElement('div');note.id='pmk-problem-context';note.className='pmk-problem-context';lead.insertAdjacentElement('afterend',note)}
+    note.textContent='Вы выбрали: '+name+'. Этот запрос добавлен к расчёту.';note.classList.add('is-visible');
+  }
+  try{setProblem(new URLSearchParams(location.search).get('problem'))}catch(e){}
+  window.addEventListener('message',function(e){if(e.data&&e.data.type==='pmk-selected-problem')setProblem(e.data.problem)});
+})();
+</script>
 <script>
 // ===== PRICES =====
 var PRICES = {
@@ -1816,7 +1840,7 @@ function showResult() {
   state.rugs.forEach(function(rug, i) {
     var info = calcRug(rug);
     var extStr = info.extras.length ? ' + ' + info.extras.join(', ') : '';
-    addLine(lines, PRICES.base[rug.type].icon + ' Ковёр #' + (i+1) + ' ' + rug.width + '×' + rug.length + ' м' + extStr, fmt(info.total) + ' ₽', '');
+    addLine(lines, PRICES.base[rug.type].icon + ' Ковёр #' + (i+1) + ' — ' + rug.width + '×' + rug.length + ' м, ' + PRICES.base[rug.type].desc + extStr, fmt(info.total) + ' ₽', '');
   });
 
   addLine(lines, 'Сумма', fmt(servicesTotal) + ' ₽', '');
@@ -1843,7 +1867,8 @@ function showResult() {
   }
 
   // Заголовок результата без имени (имя будет добавлено позже в контактах)
-  document.getElementById('result-title').textContent = 'Расчёт готов!';
+  document.getElementById('result-title').textContent = 'Расчёт по вашим данным — ' + fmt(grand) + ' ₽';
+  document.getElementById('result-sub').textContent = 'Если указанные данные совпадут после приёмки — цена не изменится.';
 
   state.history.push(6);
   showScreen(6);
