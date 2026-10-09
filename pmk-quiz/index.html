@@ -1330,6 +1330,16 @@ body {
  .quiz-value-panel .value-points span{font-size:11px;line-height:1.3}
 }
 </style>
+<style id="pmk-extras-mobile-details">
+.extra-details,.extra-details-body{display:contents}
+.extra-details>summary{display:none}
+@media(max-width:768px){
+  .extra-details{display:block;margin-top:8px}
+  .extra-details>summary{display:list-item;width:fit-content;padding:5px 0;color:var(--yellow);font-size:12px;font-weight:700;cursor:pointer}
+  .extra-details:not([open])>.extra-details-body{display:none}
+  .extra-details[open]>.extra-details-body{display:block}
+}
+</style>
 </head>
 <body>
 
@@ -1801,6 +1811,7 @@ function updateArea() {
 // ===== SCREEN 3: Extras =====
 function renderExtrasOptions() {
   var cont = document.getElementById('extras-options');
+  var expanded = Array.from(cont.querySelectorAll('details[open]')).map(function(d){return d.dataset.extra;});
   cont.innerHTML = '';
   EXTRAS.forEach(function(ex) {
     var sel = !!state.cur.extras[ex.key];
@@ -1811,11 +1822,13 @@ function renderExtrasOptions() {
       '<div class="option-text">' +
         '<div class="option-title">' + ex.label + '</div>' +
         '<div class="option-price">' + ex.priceStr + '</div>' +
+        '<details class="extra-details" data-extra="' + ex.key + '"' + (expanded.indexOf(ex.key) >= 0 ? ' open' : '') + '><summary>Подробнее</summary><div class="extra-details-body">' +
         '<div class="option-detail">' + ex.desc + '</div>' +
-        '<div class="option-hint">' + ex.hint + '</div>' +
+        '<div class="option-hint">' + ex.hint + '</div></div></details>' +
       '</div>' +
       '<div class="option-check" id="check-' + ex.key + '">' + (sel ? '✓' : '') + '</div>';
-    tile.onclick = function() {
+    tile.onclick = function(event) {
+      if (event.target.closest('.extra-details')) return;
       state.cur.extras[ex.key] = !state.cur.extras[ex.key];
       renderExtrasOptions();
     };
@@ -2150,6 +2163,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   document.addEventListener('click', function(e) {
+    if (e.target.closest('.extra-details')) return;
     var tile = e.target.closest('#type-options .option-tile, #extras-options .option-tile');
     if (tile) { prepareSliderSound(); playSliderClick(); return; }
     var button = e.target.closest('button');
