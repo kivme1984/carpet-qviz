@@ -1603,6 +1603,16 @@ function scrollQuizIntoView() {
   var isMobile = window.matchMedia && window.matchMedia('(max-width: 980px)').matches;
   var target = isMobile ? document.querySelector('.quiz-shell') : document.getElementById('pmk-quiz-calc');
   if (!target) return;
+  if (isMobile && window.parent !== window) {
+    var section = document.querySelector('.pmk-quiz-section');
+    var contentHeight = section ? Math.ceil(section.offsetTop + section.offsetHeight + parseFloat(getComputedStyle(document.body).paddingBottom || 0)) : document.body.scrollHeight;
+    window.parent.postMessage({
+      type: 'pmk-quiz-mobile-step',
+      offset: Math.max(0, target.getBoundingClientRect().top + window.scrollY - 10),
+      height: contentHeight
+    }, '*');
+    return;
+  }
 
   var offset = isMobile ? 10 : 20;
   var currentY = window.pageYOffset || document.documentElement.scrollTop || 0;
