@@ -1642,7 +1642,11 @@ function showScreen(n, isBack) {
   }
   
   updateProgress();
-  requestAnimationFrame(scrollQuizIntoView);
+  if (window.parent !== window && window.matchMedia('(max-width:980px)').matches) {
+    scrollQuizIntoView();
+  } else {
+    requestAnimationFrame(scrollQuizIntoView);
+  }
 }
 
 function goBack() {
