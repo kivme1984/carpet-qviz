@@ -1708,7 +1708,24 @@ function prepareSliderSound() {
       pmkSliderAudio = new AudioContextClass();
       fetch(pmkSliderSoundData).then(function(r) { return r.arrayBuffer(); })
         .then(function(bytes) { return pmkSliderAudio.decodeAudioData(bytes); })
-        .then(function(buffer) { pmkSliderBuffer = buffer; })
+        .then(function(buffer) {
+          // Remove the recording's leading silence so every tick responds immediately.
+          var first = buffer.length, last = 0;
+          for (var channel = 0; channel < buffer.numberOfChannels; channel++) {
+            var samples = buffer.getChannelData(channel);
+            for (var i = 0; i < samples.length; i++) {
+              if (Math.abs(samples[i]) > 0.015) { first = Math.min(first, i); last = Math.max(last, i); }
+            }
+          }
+          if (first === buffer.length) { pmkSliderBuffer = buffer; return; }
+          first = Math.max(0, first - Math.round(buffer.sampleRate * 0.004));
+          last = Math.min(buffer.length, last + Math.round(buffer.sampleRate * 0.025));
+          var trimmed = pmkSliderAudio.createBuffer(buffer.numberOfChannels, last - first, buffer.sampleRate);
+          for (var ch = 0; ch < buffer.numberOfChannels; ch++) {
+            trimmed.copyToChannel(buffer.getChannelData(ch).subarray(first, last), ch);
+          }
+          pmkSliderBuffer = trimmed;
+        })
         .catch(function() {});
     }
     if (pmkSliderAudio.state === 'suspended') pmkSliderAudio.resume().catch(function() {});
