@@ -1809,6 +1809,9 @@ function updateArea() {
 }
 
 // ===== SCREEN 3: Extras =====
+window.matchMedia('(max-width:768px)').addEventListener('change', function(event) {
+  document.querySelectorAll('#extras-options .extra-details').forEach(function(d){ d.open = !event.matches; });
+});
 function renderExtrasOptions() {
   var cont = document.getElementById('extras-options');
   var expanded = Array.from(cont.querySelectorAll('details[open]')).map(function(d){return d.dataset.extra;});
@@ -1822,7 +1825,7 @@ function renderExtrasOptions() {
       '<div class="option-text">' +
         '<div class="option-title">' + ex.label + '</div>' +
         '<div class="option-price">' + ex.priceStr + '</div>' +
-        '<details class="extra-details" data-extra="' + ex.key + '"' + (expanded.indexOf(ex.key) >= 0 ? ' open' : '') + '><summary>Подробнее</summary><div class="extra-details-body">' +
+        '<details class="extra-details" data-extra="' + ex.key + '"' + (!window.matchMedia('(max-width:768px)').matches || expanded.indexOf(ex.key) >= 0 ? ' open' : '') + '><summary>Подробнее</summary><div class="extra-details-body">' +
         '<div class="option-detail">' + ex.desc + '</div>' +
         '<div class="option-hint">' + ex.hint + '</div></div></details>' +
       '</div>' +
