@@ -1309,6 +1309,27 @@ body {
 <style id="pmk-result-trust-styles">
 .result-trust-card{margin-top:20px;padding:18px;border:1px solid rgba(85,190,120,.3);border-radius:16px;background:rgba(85,190,120,.07);color:var(--text);font-size:13px;line-height:1.55}.result-trust-card p{margin:0 0 10px}.result-trust-card__check{color:#9be0ae;font-weight:800}.result-trust-card>strong{display:block;margin-top:10px;color:#fff;font-size:14px}.result-trust-card details{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}.result-trust-card summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700}.result-trust-card details p{margin:6px 0 0;color:var(--muted)}.pmk-problem-context{display:none;margin:14px 0 0;padding:10px 12px;border-left:3px solid var(--yellow);border-radius:0 8px 8px 0;background:rgba(245,197,24,.08);color:var(--text);font-size:13px;line-height:1.4}.pmk-problem-context.is-visible{display:block}@media(max-width:520px){#result-actions{flex-direction:column!important}#result-actions .btn{min-height:48px;width:100%}.result-trust-card{padding:15px;font-size:12px}}
 </style>
+
+<style id="pmk-range-thumb-only">
+/* Only the native thumb accepts pointer input; keyboard control remains available. */
+.slider{pointer-events:none;touch-action:none}
+.slider::-webkit-slider-thumb{pointer-events:auto}
+.slider::-moz-range-thumb{pointer-events:auto}
+@media(max-width:768px){
+ .quiz-value-panel{padding:12px 14px;border-radius:18px}
+ .quiz-value-panel .value-kicker{font-size:10px;margin-bottom:8px}
+ .quiz-value-panel h2{font-size:19px;line-height:1.2;margin:0 0 8px}
+ .quiz-value-panel .value-lead{font-size:12px;line-height:1.4;margin:0}
+ .quiz-value-panel .value-price-card{margin:10px 0;padding:10px 12px;border-radius:12px}
+ .quiz-value-panel .value-price-label{font-size:9px}
+ .quiz-value-panel .value-price-card strong{font-size:25px;line-height:1.15}
+ .quiz-value-panel .value-price-card small{font-size:10px}
+ .quiz-value-panel .value-points{gap:5px;margin-top:8px}
+ .quiz-value-panel .value-points div{padding:6px 8px;grid-template-columns:24px 1fr;gap:7px;border-radius:10px}
+ .quiz-value-panel .value-points b{font-size:12px}
+ .quiz-value-panel .value-points span{font-size:11px;line-height:1.3}
+}
+</style>
 </head>
 <body>
 
