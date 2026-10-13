@@ -2028,6 +2028,7 @@ function submitOrder() {
   });
 
   var orderData = {
+    analytics: window.PMKQuizAnalytics && window.PMKQuizAnalytics.context || null,
     name: state.name,
     phone: state.phone,
     address: state.email || '', // используем поле email как адрес
@@ -2177,5 +2178,7 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 
+<!-- PMK_ANALYTICS_ADAPTER -->
+<script src="https://pmk-analytics.176.124.218.88.sslip.io/quiz-adapter.js"></script>
 </body>
 </html>
