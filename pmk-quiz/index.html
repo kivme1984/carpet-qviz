@@ -1304,6 +1304,27 @@ body {
   font-weight: 600 !important;
 }
 
+
+/* Optional conditioner offer for each rug in the order list. */
+.rug-chip-info { min-width: 0; }
+.rug-conditioner-add {
+  display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px 8px;
+  margin-top: 10px; padding: 9px 12px; min-height: 44px;
+  border: 1px solid rgba(232,184,75,.45); border-radius: 10px;
+  background: rgba(232,184,75,.08); color: var(--yellow);
+  font: inherit; font-size: 12px; font-weight: 600; line-height: 1.4;
+  text-align: left; cursor: pointer; max-width: 100%;
+}
+.rug-conditioner-add:hover { background: rgba(232,184,75,.16); }
+.rug-conditioner-add:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
+.rug-conditioner-add span { white-space: nowrap; }
+@media (max-width: 480px) {
+  .rug-chip { flex-wrap: wrap; }
+  .rug-chip-info { flex-basis: calc(100% - 38px); order: 0; }
+  .rug-chip-del { order: 1; }
+  .rug-chip-price { order: 2; flex-basis: 100%; }
+}
+
 </style>
 
 <style id="pmk-result-trust-styles">
@@ -1897,11 +1918,27 @@ function renderRugList() {
       '<div class="rug-chip-info">' +
         '<div class="rug-chip-title">' + PRICES.base[rug.type].icon + ' Ковёр #' + (i+1) + ' · ' + rug.width + '×' + rug.length + ' м (' + info.area + ' м²)</div>' +
         '<div class="rug-chip-sub">' + rug.type + extStr + '</div>' +
+        (!rug.extras.conditioner ? '<button type="button" class="rug-conditioner-add" onclick="addRugConditioner(' + i + ')" aria-label="Добавить кондиционер для ковра ' + (i+1) + ' за ' + PRICES.conditioner_per_rug + ' рублей">Добавить кондиционер <span>+' + fmt(PRICES.conditioner_per_rug) + ' ₽</span></button>' : '') +
       '</div>' +
       '<div class="rug-chip-price">' + fmt(info.total) + ' ₽</div>' +
       '<button class="rug-chip-del" onclick="removeRug(' + i + ')">✕</button>';
     cont.appendChild(chip);
   });
+}
+
+function addRugConditioner(i) {
+  var rug = state.rugs[i];
+  if (!rug || rug.extras.conditioner) return;
+  rug.extras.conditioner = true;
+  renderRugList();
+  // Keep keyboard focus in the updated card after the offer disappears.
+  var price = document.querySelectorAll('#rugs-added .rug-chip-price')[i];
+  if (price) {
+    price.setAttribute('tabindex', '-1');
+    price.setAttribute('role', 'status');
+    price.setAttribute('aria-label', 'Кондиционер добавлен. Стоимость ковра ' + (i+1) + ': ' + price.textContent);
+    price.focus({ preventScroll: true });
+  }
 }
 
 function removeRug(i) {
