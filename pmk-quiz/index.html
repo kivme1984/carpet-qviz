@@ -1325,6 +1325,49 @@ body {
   .rug-chip-price { order: 2; flex-basis: 100%; }
 }
 
+/* Existing black/gold styling, compact offers and keyboard-accessible controls. */
+.rug-chip-title img { width:64px!important; height:64px!important; float:left; margin:0 10px 8px 0; }
+.rug-chip-info { min-width:0; }
+.rug-chip-title { min-height:64px; }
+.rug-price-detail { color:var(--muted); font-size:12px; margin-top:6px; }
+.rug-conditioner-selected { color:var(--yellow); font-size:13px; line-height:1.5; margin-top:9px; }
+.rug-service-remove,.rug-edit { color:var(--muted); background:none; border:0; text-decoration:underline; cursor:pointer; font:inherit; font-size:12px; padding:8px 2px; min-height:36px; }
+.rug-edit { display:block; }
+.rug-chip-price del { display:block; color:var(--muted); font-size:12px; font-weight:400; }
+.rug-conditioner-add { font-size:12px; min-height:44px; }
+.conditioner-offer { padding:15px; border:1px solid rgba(232,184,75,.4); border-radius:14px; margin:14px 0; background:rgba(232,184,75,.05); }
+.conditioner-offer[hidden] { display:none; }
+.conditioner-offer strong { display:block; font-size:16px; line-height:1.4; color:var(--yellow); }
+.conditioner-offer p { color:var(--muted); font-size:13px; line-height:1.5; margin:8px 0; }
+.conditioner-offer .offer-saving { color:var(--yellow); }
+.conditioner-offer-price { font-size:13px; line-height:1.5; }
+.conditioner-offer-price del { color:var(--muted); margin-right:8px; }
+.conditioner-offer-price b { color:var(--yellow); font-size:18px; }
+.conditioner-offer .btn { width:100%; margin-top:7px; font-size:13px; white-space:normal; justify-content:center; }
+.cart-summary { margin:16px 0; line-height:1.5; }
+.cart-summary strong { display:block; font-size:20px; }
+.cart-summary span { display:block; font-size:13px; color:var(--yellow); }
+.cart-summary small { color:var(--muted); }
+button.loyal-toggle { width:100%; text-align:left; font:inherit; color:inherit; cursor:pointer; }
+.loyal-toggle .loyal-text { flex:1; }
+.contact-order-total { margin:16px 0; color:var(--yellow); font-size:20px; font-weight:700; }
+.result-line.detail { font-size:12px; color:var(--muted); padding-left:10px; }
+.rug-offer-dialog { position:absolute; top:24px; left:12px; right:12px; margin:0 auto; box-sizing:border-box; width:calc(100% - 24px); max-width:440px; max-height:calc(100vh - 32px); overflow:auto; color:var(--text,#fff); background:#171a1c; border:1px solid rgba(232,184,75,.6); border-radius:20px; padding:24px; box-shadow:0 20px 60px #0008; }
+.rug-offer-dialog::backdrop { background:rgba(0,0,0,.75); }
+.rug-offer-dialog h2 { font:800 22px/1.3 Manrope,Arial,sans-serif; margin:0 22px 12px 0; }
+.rug-offer-dialog p { font-size:14px; line-height:1.6; color:var(--muted); margin:0 0 16px; }
+.rug-offer-dialog .btn { width:100%; justify-content:center; white-space:normal; font-size:13px; margin-top:10px; }
+.rug-offer-close { position:absolute; top:8px; right:8px; width:40px; height:40px; color:var(--muted); background:none; border:0; cursor:pointer; font-size:24px; }
+button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
+@media(max-width:480px) {
+ .rug-chip { gap:8px; }
+ .rug-chip-title { font-size:13px; }
+ .rug-service-remove { min-height:44px; }
+ .rug-offer-dialog { padding:20px; }
+ #result-actions { flex-wrap:wrap; }
+ #result-actions .btn { min-width:125px; white-space:normal; font-size:12px; }
+}
+
 </style>
 
 <style id="pmk-result-trust-styles">
@@ -1487,6 +1530,16 @@ body {
       <div class="screen-title">Ковры добавлены</div>
       <div class="screen-sub">Добавьте ещё ковры или переходите к оформлению</div>
       <div class="rugs-added" id="rugs-added"></div>
+      <div id="conditioner-offer" class="conditioner-offer" hidden></div>
+      <button type="button" role="switch" aria-checked="false" class="loyal-toggle" id="cart-loyal-toggle" onclick="toggleLoyal()">
+        <span class="loyal-icon">⭐</span>
+        <div class="loyal-text">
+          <strong>Постоянный клиент — скидка 10%</strong>
+          <span>На весь заказ вместо скидки 5%. Проверим по базе.</span>
+        </div>
+        <div class="toggle-sw" ></div>
+      </button>
+      <div class="cart-summary" aria-live="polite"><strong id="cart-total" tabindex="-1"></strong><span id="cart-savings"></span><small id="cart-minimum"></small></div>
       <div class="btn-row" style="flex-direction:column; gap:10px;">
         <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="addMoreRug()">+ Добавить ещё ковёр</button>
         <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="showResult()">Узнать стоимость →</button>
@@ -1513,14 +1566,15 @@ body {
           <input type="text" id="inp-email" placeholder="ул. Звездинка, д. 5, подъезд 2, этаж 3, кв. 25">
         </div>
       </div>
-      <div class="loyal-toggle" id="loyal-toggle" onclick="toggleLoyal()">
+      <button type="button" role="switch" aria-checked="false" class="loyal-toggle" id="loyal-toggle" onclick="toggleLoyal()">
         <span class="loyal-icon">⭐</span>
         <div class="loyal-text">
-          <strong>У вас уже был заказ?</strong>
-          <span>Скидка 10% применяется после проверки по базе</span>
+          <strong>Постоянный клиент — скидка 10%</strong>
+          <span>На весь заказ вместо скидки 5%. Проверим по базе.</span>
         </div>
         <div class="toggle-sw" id="toggle-sw"></div>
-      </div>
+      </button>
+      <div id="contact-order-total" class="contact-order-total" aria-live="polite"></div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="goBack()">← Назад</button>
         <button class="btn btn-primary" onclick="submitOrder()">Отправить заявку ✓</button>
@@ -1550,7 +1604,8 @@ body {
     </div>
     <div style="display:flex; gap:12px; margin-top:4px;" id="result-actions">
       <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="restartQuiz()">Новый расчёт</button>
-      <button class="btn btn-primary" style="flex:1;justify-content:center;" id="btn-order" onclick="goToContacts()">Оформить забор ковра →</button>
+      <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="state.history.push(4);refreshOrderViews();showScreen(4)">Изменить заказ</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" id="btn-order" onclick="goToContacts()">Перейти к оформлению →</button>
     </div>
 
   </div>
@@ -1595,7 +1650,7 @@ var PRICES = {
   min_order: 1800,
   delivery: 0,
   loyal_percent: 10,
-  tiers: [{ min: 2, pct: 5 }, { min: 3, pct: 10 }]
+  additional_rug_percent: 5
 };
 
 var EXTRAS = [
@@ -1615,6 +1670,7 @@ var state = {
   // current rug being configured
   cur: { type: null, width: 2, length: 3, extras: {} },
   isLoyal: false,
+  nextRugId: 1, promo: {status:'unseen',beforeIds:[]}, editingRugId: null, giftCount: 0, lastConditionerOffer: null,
   name: '', phone: '', email: ''
 };
 
@@ -1663,6 +1719,8 @@ function showScreen(n, isBack) {
   if (isBack) target.classList.add('back');
   target.classList.add('active');
   state.currentScreen = n;
+  if (n === 4) trackConditionerOffer();
+  if (n === 3) document.querySelector('#screen-3 .btn-primary').textContent = state.editingRugId ? 'Сохранить ковёр ✓' : 'Добавить ковёр ✓';
   
   // Hide/show progress bar
   var wrapper = document.querySelector('.quiz-wrapper');
@@ -1860,173 +1918,356 @@ function renderExtrasOptions() {
   });
 }
 
-// ===== Rug calc =====
+// One pricing path for cart cards, review, analytics and the submitted order.
 function calcRug(rug) {
   var area = rug.width * rug.length;
-  var base = PRICES.base[rug.type].price;
-  
-  // Автоматическое повышение цены для средний ворс синтетика при ширине ≥3м
-  if (rug.type === 'Средний ворс (синтетика)' && rug.width >= 3) {
-    base = 450; // Повышенная цена для широких ковров
+  var rate = PRICES.base[rug.type].price;
+  if (rug.type === 'Средний ворс (синтетика)' && rug.width >= 3) rate = 450;
+  var washing = Math.round(rate * area), otherExtras = 0, extras = [];
+  var conditioner = rug.extras.conditioner ? PRICES.conditioner_per_rug : 0;
+  if (conditioner) extras.push('Кондиционер');
+  if (rug.extras.odor) { otherExtras += area <= PRICES.odor_area_threshold ? PRICES.odor_removal_per_rug : PRICES.odor_removal_large; extras.push('Удал. запаха'); }
+  if (rug.extras.pet_hair) { otherExtras += PRICES.pet_hair_per_m2 * area; extras.push('Шерсть жив.'); }
+  if (rug.extras.stain) { otherExtras += PRICES.stain_per_rug; extras.push('Пятна'); }
+  if (rug.extras.pile_lift) { otherExtras += PRICES.pile_lift_per_m2 * area; extras.push('Подъём ворса'); }
+  if (rug.extras.ozonation) { otherExtras += PRICES.ozonation_per_rug; extras.push('Озонация'); }
+  otherExtras = Math.round(otherExtras);
+  return { total: washing + otherExtras + conditioner, washing: washing, otherExtras: otherExtras, conditioner: conditioner, area: area.toFixed(2), extras: extras };
+}
+
+function priceOrder(rugs, isLoyal, promo) {
+  var baseline = promo && promo.beforeIds || [];
+  var active = !!(promo && promo.status === 'accepted' && rugs.some(function(r) { return baseline.indexOf(r.id) >= 0; }));
+  var selected = 0;
+  var lines = rugs.map(function(rug) {
+    var raw = calcRug(rug);
+    var gift = !!rug.extras.conditioner && (++selected % 3 === 0);
+    var giftSaving = gift ? PRICES.conditioner_per_rug : 0;
+    var payable = raw.total - giftSaving;
+    var eligible = active && baseline.indexOf(rug.id) < 0;
+    var washDiscount = !isLoyal && eligible ? Math.round(raw.washing * PRICES.additional_rug_percent / 100) : 0;
+    return { id: rug.id, raw: raw, gift: gift, giftSaving: giftSaving, eligible: eligible,
+      conditioner: raw.conditioner - giftSaving, washDiscount: washDiscount, loyalDiscount: 0,
+      payableBeforeDiscount: payable, total: payable - washDiscount };
+  });
+  var delivery = PRICES.delivery;
+  var paidServices = lines.reduce(function(n,l) { return n + l.payableBeforeDiscount; }, 0);
+  var loyalDiscount = isLoyal ? Math.round((paidServices + delivery) * PRICES.loyal_percent / 100) : 0;
+  // Allocate the rounded loyalty discount so line totals sum to the actual order.
+  var allocated = 0, accumulated = 0;
+  if (isLoyal) lines.forEach(function(line) {
+    accumulated += line.payableBeforeDiscount;
+    var rounded = Math.round(accumulated * PRICES.loyal_percent / 100);
+    line.loyalDiscount = rounded - allocated;
+    allocated = rounded;
+    line.total = line.payableBeforeDiscount - line.loyalDiscount;
+  });
+  var deliveryDiscount = isLoyal ? loyalDiscount - allocated : 0;
+  var washDiscount = lines.reduce(function(n,l) { return n + l.washDiscount; }, 0);
+  var gifts = Math.floor(selected / 3);
+  var giftSaving = gifts * PRICES.conditioner_per_rug;
+  var discount = washDiscount + loyalDiscount;
+  var afterDiscount = paidServices + delivery - discount;
+  var minimum = rugs.length ? Math.max(0, PRICES.min_order - afterDiscount) : 0;
+  return { lines: lines, selectedConditioners: selected, freeCount: gifts,
+    conditionerTotal: (selected - gifts) * PRICES.conditioner_per_rug, conditionerSaving: giftSaving,
+    servicesTotal: lines.reduce(function(n,l) { return n + l.raw.total; }, 0), paidServices: paidServices,
+    washDiscount: washDiscount, loyalDiscount: loyalDiscount, discount: discount,
+    discountPercent: isLoyal ? PRICES.loyal_percent : washDiscount ? PRICES.additional_rug_percent : 0,
+    delivery: delivery, deliveryDiscount: deliveryDiscount, deliveryPayable: delivery - deliveryDiscount,
+    minOrderAdjustment: minimum, savings: giftSaving + discount, total: rugs.length ? afterDiscount + minimum : 0,
+    promotionActive: active };
+}
+
+function ensureRugIds() {
+  if (!state.promo) state.promo = { status: 'unseen', beforeIds: [] };
+  if (!state.nextRugId) state.nextRugId = 1;
+  var used = {};
+  state.rugs.forEach(function(rug) {
+    if (!rug.id || used[rug.id]) {
+      do { rug.id = 'rug-' + state.nextRugId++; }
+      while (used[rug.id] || state.rugs.some(function(other) { return other !== rug && other.id === rug.id; }));
+    }
+    used[rug.id] = true;
+  });
+}
+
+function calculateOrder() {
+  ensureRugIds();
+  if (state.promo.status === 'accepted' && !state.rugs.some(function(r) { return state.promo.beforeIds.indexOf(r.id) >= 0; })) {
+    state.promo.status = 'invalidated';
+    promotionEvent('calculator_offer_invalidated', { count: state.rugs.length });
   }
-  
-  var total = base * area;
-  var extras = [];
-  if (rug.extras.conditioner) { total += PRICES.conditioner_per_rug; extras.push('Кондиционер'); }
-  if (rug.extras.odor)        { var odorPrice = area <= PRICES.odor_area_threshold ? PRICES.odor_removal_per_rug : PRICES.odor_removal_large; total += odorPrice; extras.push('Удал. запаха'); }
-  if (rug.extras.pet_hair)    { total += PRICES.pet_hair_per_m2 * area; extras.push('Шерсть жив.'); }
-  if (rug.extras.stain)       { total += PRICES.stain_per_rug; extras.push('Пятна'); }
-  if (rug.extras.pile_lift)   { total += PRICES.pile_lift_per_m2 * area; extras.push('Подъём ворса'); }
-  if (rug.extras.ozonation)   { total += PRICES.ozonation_per_rug; extras.push('Озонация'); }
-  return { total: Math.round(total), area: area.toFixed(2), extras: extras };
+  return priceOrder(state.rugs, state.isLoyal, state.promo);
+}
+
+function promotionEvent(name, props) {
+  document.dispatchEvent(new CustomEvent('pmk-promotion', { detail: { name: name, props: props || {} } }));
 }
 
 function fmt(n) { return new Intl.NumberFormat('ru-RU').format(Math.round(n)); }
 
-// ===== Add rug =====
+
 function addCurrentRug() {
   if (!state.cur.type) { alert('Выберите тип ковра'); return; }
   var w = parseFloat(document.getElementById('inp-width').value) || 0;
   var l = parseFloat(document.getElementById('inp-length').value) || 0;
   if (w <= 0 || l <= 0) { alert('Укажите корректные размеры'); return; }
-  state.cur.width = w;
-  state.cur.length = l;
-  state.rugs.push(JSON.parse(JSON.stringify(state.cur)));
-  // reset cur
+  ensureRugIds();
+  state.cur.width = w; state.cur.length = l;
+  var rug = JSON.parse(JSON.stringify(state.cur));
+  var editIndex = state.rugs.findIndex(function(r) { return r.id === state.editingRugId; });
+  var added = editIndex < 0;
+  if (added) {
+    rug.id = 'rug-' + state.nextRugId++;
+    state.rugs.push(rug);
+  } else {
+    rug.id = state.editingRugId;
+    state.rugs[editIndex] = rug;
+  }
+  var order = calculateOrder();
+  if (added && order.promotionActive && state.promo.beforeIds.indexOf(rug.id) < 0) {
+    promotionEvent('calculator_offer_rug_added', { count: state.rugs.length, percent: PRICES.additional_rug_percent });
+  }
+  if (rug.extras.conditioner) promotionEvent('calculator_conditioner_added', { count: 1, selectedCount: order.selectedConditioners, mode: added ? 'service' : 'edit' });
+  state.editingRugId = null;
   state.cur = { type: null, width: 2, length: 3, extras: {} };
-  renderRugList();
-  state.history.push(4);
-  showScreen(4);
+  refreshOrderViews();
+  state.history.push(4); showScreen(4);
 }
 
 function addMoreRug() {
+  state.editingRugId = null;
   state.cur = { type: null, width: 2, length: 3, extras: {} };
-  updateSliders();
-  state.history.push(1);
-  showScreen(1);
+  document.getElementById('inp-width').value = 2;
+  document.getElementById('inp-length').value = 3;
+  updateSliders(); state.history.push(1); showScreen(1);
+}
+
+function editRug(id) {
+  var rug = state.rugs.find(function(r) { return r.id === id; });
+  if (!rug) return;
+  state.editingRugId = id;
+  state.cur = JSON.parse(JSON.stringify(rug));
+  document.getElementById('inp-width').value = rug.width;
+  document.getElementById('inp-length').value = rug.length;
+  updateSliders(); state.history.push(1); showScreen(1);
 }
 
 function renderRugList() {
+  var order = calculateOrder();
   var cont = document.getElementById('rugs-added');
   cont.innerHTML = '';
   state.rugs.forEach(function(rug, i) {
-    var info = calcRug(rug);
-    var chip = document.createElement('div');
-    chip.className = 'rug-chip';
-    var extStr = info.extras.length ? ' · ' + info.extras.join(', ') : '';
-    chip.innerHTML =
-      '<div class="rug-chip-info">' +
-        '<div class="rug-chip-title">' + PRICES.base[rug.type].icon + ' Ковёр #' + (i+1) + ' · ' + rug.width + '×' + rug.length + ' м (' + info.area + ' м²)</div>' +
-        '<div class="rug-chip-sub">' + rug.type + extStr + '</div>' +
-        (!rug.extras.conditioner ? '<button type="button" class="rug-conditioner-add" onclick="addRugConditioner(' + i + ')" aria-label="Добавить кондиционер для ковра ' + (i+1) + ' за ' + PRICES.conditioner_per_rug + ' рублей">Добавить кондиционер <span>+' + fmt(PRICES.conditioner_per_rug) + ' ₽</span></button>' : '') +
-      '</div>' +
-      '<div class="rug-chip-price">' + fmt(info.total) + ' ₽</div>' +
-      '<button class="rug-chip-del" onclick="removeRug(' + i + ')">✕</button>';
+    var line = order.lines[i], info = line.raw;
+    var chip = document.createElement('div'); chip.className = 'rug-chip';
+    var serviceText = info.extras.length ? ' · ' + info.extras.join(', ') : '';
+    var discount = line.washDiscount + line.loyalDiscount;
+    chip.innerHTML = '<div class="rug-chip-info">' +
+      '<div class="rug-chip-title">' + PRICES.base[rug.type].icon + ' Ковёр #' + (i+1) + ' · ' + rug.width + '×' + rug.length + ' м (' + info.area + ' м²)</div>' +
+      '<div class="rug-chip-sub">' + rug.type + serviceText + '</div>' +
+      '<div class="rug-price-detail">Стирка: ' + fmt(info.washing) + ' ₽' +
+      (line.washDiscount ? ' · скидка ' + PRICES.additional_rug_percent + '%: −' + fmt(line.washDiscount) + ' ₽' : '') + '</div>' +
+      (line.loyalDiscount ? '<div class="rug-price-detail">Постоянный клиент: −' + fmt(line.loyalDiscount) + ' ₽ (' + PRICES.loyal_percent + '%)</div>' : '') +
+      (rug.extras.conditioner ? '<div class="rug-conditioner-selected">✓ Кондиционер: ' + (line.gift ? 'в подарок · 0 ₽' : fmt(line.conditioner) + ' ₽') +
+        ' <button type="button" class="rug-service-remove" onclick="setRugConditioner(\'' + rug.id + '\',false)" aria-label="Убрать кондиционер с ковра ' + (i+1) + '">Убрать</button></div>' :
+        '<button type="button" class="rug-conditioner-add" onclick="setRugConditioner(\'' + rug.id + '\',true)" aria-label="Добавить кондиционер для ковра ' + (i+1) + ' за ' + PRICES.conditioner_per_rug + ' рублей">+ Добавить кондиционер — ' + fmt(PRICES.conditioner_per_rug) + ' ₽</button>') +
+      '<button type="button" class="rug-edit" onclick="editRug(\'' + rug.id + '\')">Изменить ковёр</button></div>' +
+      '<div class="rug-chip-price" tabindex="-1" aria-label="Стоимость ковра ' + (i+1) + '">' +
+      (discount || line.gift ? '<del>' + fmt(info.total) + ' ₽</del> ' : '') + fmt(line.total) + ' ₽</div>' +
+      '<button type="button" class="rug-chip-del" onclick="removeRug(' + i + ')" aria-label="Удалить ковёр ' + (i+1) + '">✕</button>';
     cont.appendChild(chip);
   });
+  renderConditionerOffer(order);
+  document.getElementById('cart-total').textContent = 'Итого: ' + fmt(order.total) + ' ₽';
+  document.getElementById('cart-savings').textContent = order.savings ? 'Ваша экономия: ' + fmt(order.savings) + ' ₽' : '';
+  document.getElementById('cart-minimum').textContent = order.minOrderAdjustment ? 'С учётом минимального заказа ' + fmt(PRICES.min_order) + ' ₽' : '';
+  if (state.currentScreen === 4) trackConditionerOffer();
 }
 
-function addRugConditioner(i) {
-  var rug = state.rugs[i];
-  if (!rug || rug.extras.conditioner) return;
-  rug.extras.conditioner = true;
-  renderRugList();
-  // Keep keyboard focus in the updated card after the offer disappears.
-  var price = document.querySelectorAll('#rugs-added .rug-chip-price')[i];
-  if (price) {
-    price.setAttribute('tabindex', '-1');
-    price.setAttribute('role', 'status');
-    price.setAttribute('aria-label', 'Кондиционер добавлен. Стоимость ковра ' + (i+1) + ': ' + price.textContent);
-    price.focus({ preventScroll: true });
+function renderConditionerOffer(order) {
+  var el = document.getElementById('conditioner-offer'), count = state.rugs.length;
+  el.hidden = count < 2;
+  if (count < 2) { el.innerHTML = ''; return; }
+  if (count === 2) {
+    el.innerHTML = '<strong>Кондиционер для трёх ковров — по цене двух</strong><p>Добавьте третий ковёр и выберите кондиционер для всех трёх — одна обработка будет бесплатной.</p>';
+    return;
   }
+  var gifts = Math.floor(count / 3), full = count * PRICES.conditioner_per_rug, price = (count - gifts) * PRICES.conditioner_per_rug;
+  var title = count === 3 ? 'Третий кондиционер в подарок!' : count === 6 ? 'Два кондиционера в подарок!' :
+    gifts === 1 ? 'Кондиционер для ' + count + ' ковров — один в подарок!' : 'Кондиционер для ' + count + ' ковров — ' + gifts + ' в подарок!';
+  var allSelected = order.selectedConditioners === count;
+  var difference = price - order.conditionerTotal;
+  var actualDifference = priceOrder(state.rugs.map(function(r) { return { id:r.id, type:r.type, width:r.width, length:r.length, extras:Object.assign({},r.extras,{conditioner:true}) }; }), state.isLoyal, state.promo).total - order.total;
+  el.innerHTML = '<strong>' + title + '</strong><p>' + (count === 3 ? 'Добавьте кондиционер для всех трёх ковров и оплатите только два.' : 'Каждая третья выбранная обработка — бесплатно.') + '</p>' +
+    '<div class="conditioner-offer-price"><del>' + fmt(full) + ' ₽</del> <b>' + fmt(price) + ' ₽</b> за кондиционеры</div>' +
+    '<p class="offer-saving">Экономия по акции: ' + fmt(gifts * PRICES.conditioner_per_rug) + ' ₽</p>' +
+    (allSelected ? '<div class="rug-conditioner-selected">✓ Кондиционер выбран для всех ковров. Подарки учтены.</div>' :
+      '<p>Уже выбрано: ' + order.selectedConditioners + '. Доплата за кондиционеры: ' + fmt(difference) + ' ₽' +
+      (state.isLoyal || order.minOrderAdjustment ? '. Изменение итога заказа: +' + fmt(actualDifference) + ' ₽' : '') + '.</p>' +
+      '<button type="button" class="btn btn-outline" onclick="addAllConditioners()">Добавить кондиционер ко всем — ' + fmt(price) + ' ₽</button>');
+}
+
+function trackConditionerOffer() {
+  var order = calculateOrder(), n = state.rugs.length;
+  if (n < 3 || order.selectedConditioners === n) return;
+  var key = n + ':' + order.selectedConditioners;
+  if (state.lastConditionerOffer === key) return;
+  state.lastConditionerOffer = key;
+  promotionEvent('calculator_conditioner_offer_shown', { count:n, selectedCount:order.selectedConditioners, freeCount:Math.floor(n/3) });
+}
+
+function refreshOrderViews() {
+  var order = calculateOrder();
+  if (state.giftCount !== order.freeCount) {
+    state.giftCount = order.freeCount;
+    promotionEvent('calculator_conditioner_gifts_changed', { count:state.rugs.length, selectedCount:order.selectedConditioners, freeCount:order.freeCount });
+  }
+  renderRugList(); renderOrderResult(); syncLoyalControls();
+  document.getElementById('contact-order-total').textContent = 'Итого: ' + fmt(order.total) + ' ₽';
+}
+
+function setRugConditioner(id, selected) {
+  var rug = state.rugs.find(function(r) { return r.id === id; });
+  if (!rug || !!rug.extras.conditioner === selected) return;
+  rug.extras.conditioner = selected;
+  refreshOrderViews();
+  var order = calculateOrder();
+  promotionEvent(selected ? 'calculator_conditioner_added' : 'calculator_conditioner_removed', { count:1, selectedCount:order.selectedConditioners, freeCount:order.freeCount, mode:'individual' });
+  var i = state.rugs.indexOf(rug), price = document.querySelectorAll('#rugs-added .rug-chip-price')[i];
+  if (price) price.focus({preventScroll:true});
+}
+
+// Backwards-compatible entry point for the previously published button.
+function addRugConditioner(i) { ensureRugIds(); if (state.rugs[i]) setRugConditioner(state.rugs[i].id, true); }
+
+function addAllConditioners() {
+  var added = 0;
+  state.rugs.forEach(function(r) { if (!r.extras.conditioner) { r.extras.conditioner = true; added++; } });
+  if (!added) return;
+  refreshOrderViews();
+  var order = calculateOrder();
+  promotionEvent('calculator_conditioner_offer_accepted', { count:state.rugs.length, selectedCount:order.selectedConditioners, freeCount:order.freeCount });
+  promotionEvent('calculator_conditioner_added', { count:added, selectedCount:order.selectedConditioners, freeCount:order.freeCount, mode:'group' });
+  document.getElementById('cart-total').focus({preventScroll:true});
 }
 
 function removeRug(i) {
-  state.rugs.splice(i, 1);
-  if (state.rugs.length === 0) {
-    state.history = [1];
-    updateSliders();
-    showScreen(1, true);
-  } else {
-    renderRugList();
-  }
+  if (!state.rugs[i]) return;
+  state.rugs.splice(i,1); refreshOrderViews();
+  if (!state.rugs.length) { state.history = [1]; addMoreRug(); }
 }
 
-// ===== Contacts =====
+function continueCheckout() {
+  refreshOrderViews(); state.history.push(5); showScreen(5);
+}
+
 function goToContacts() {
-  state.history.push(5);
-  showScreen(5);
+  if (!state.rugs.length) return;
+  calculateOrder();
+  if (!state.isLoyal && state.promo.status === 'unseen' && state.rugs.length <= 2) {
+    var count = state.rugs.length, modal = document.getElementById('rug-discount-offer');
+    state.promo.status = 'shown';
+    document.getElementById('rug-offer-title').textContent = count === 1 ? 'Есть ещё ковёр? Добавьте его со скидкой ' + PRICES.additional_rug_percent + '%!' : 'Третий ковёр — со скидкой ' + PRICES.additional_rug_percent + '%!';
+    document.getElementById('rug-offer-accept').textContent = count === 1 ? 'Добавить ковёр со скидкой ' + PRICES.additional_rug_percent + '%' : 'Добавить третий ковёр со скидкой ' + PRICES.additional_rug_percent + '%';
+    var anchor = document.querySelector('.screen.active');
+    modal.style.top = Math.max(window.scrollY + 16, anchor.getBoundingClientRect().top + window.scrollY + 30) + 'px';
+    modal.showModal();
+    promotionEvent('calculator_offer_shown', {count:count,percent:PRICES.additional_rug_percent});
+    if (parent !== window) parent.postMessage({type:'pmk-quiz-mobile-step',offset:Math.max(0,parseFloat(modal.style.top)-16),height:document.body.scrollHeight},'*');
+    else modal.scrollIntoView({block:'center'});
+    return;
+  }
+  continueCheckout();
+}
+
+function acceptRugOffer() {
+  if (state.promo.status !== 'shown') return;
+  ensureRugIds();
+  state.promo = {status:'accepted',beforeIds:state.rugs.map(function(r) { return r.id; })};
+  document.getElementById('rug-discount-offer').close();
+  promotionEvent('calculator_offer_accepted', {count:state.rugs.length,percent:PRICES.additional_rug_percent});
+  addMoreRug();
+}
+
+function declineRugOffer() {
+  if (state.promo.status !== 'shown') return;
+  state.promo.status = 'declined';
+  document.getElementById('rug-discount-offer').close();
+  promotionEvent('calculator_offer_declined', {count:state.rugs.length});
+  continueCheckout();
+}
+
+function syncLoyalControls() {
+  ['loyal-toggle','cart-loyal-toggle'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.classList.toggle('on',state.isLoyal); el.setAttribute('aria-checked',String(state.isLoyal)); }
+  });
 }
 
 function toggleLoyal() {
   state.isLoyal = !state.isLoyal;
-  var el = document.getElementById('loyal-toggle');
-  if (state.isLoyal) el.classList.add('on'); else el.classList.remove('on');
+  refreshOrderViews();
+  promotionEvent('calculator_loyal_changed', {percent:state.isLoyal ? PRICES.loyal_percent : 0,total:calculateOrder().total});
 }
 
-// ===== Result =====
-function getDiscountPct() {
-  if (state.isLoyal) return PRICES.loyal_percent;
-  var best = 0;
-  PRICES.tiers.forEach(function(t) { if (state.rugs.length >= t.min && t.pct > best) best = t.pct; });
-  return best;
+// Kept for integrations; no automatic volume discount remains.
+function getDiscountPct() { return calculateOrder().discountPercent; }
+
+function renderOrderResult() {
+  var order = calculateOrder(), lines = document.getElementById('result-lines');
+  lines.innerHTML = '';
+  state.rugs.forEach(function(rug,i) {
+    var line = order.lines[i], label = 'Ковёр #' + (i+1) + ' — ' + rug.width + '×' + rug.length + ' м, ' + PRICES.base[rug.type].desc;
+    addLine(lines,label,fmt(line.total)+' ₽','');
+    addLine(lines,'Стирка',fmt(line.raw.washing)+' ₽','detail');
+    if (line.raw.otherExtras) addLine(lines,line.raw.extras.filter(function(e) { return e !== 'Кондиционер'; }).join(', '),fmt(line.raw.otherExtras)+' ₽','detail');
+    if (rug.extras.conditioner) addLine(lines,'Кондиционер' + (line.gift ? ' — в подарок' : ''),fmt(line.conditioner)+' ₽','detail');
+    if (line.washDiscount) addLine(lines,'Скидка на стирку дополнительного ковра '+PRICES.additional_rug_percent+'%','−'+fmt(line.washDiscount)+' ₽','discount');
+    if (line.loyalDiscount) addLine(lines,'Постоянный клиент '+PRICES.loyal_percent+'%','−'+fmt(line.loyalDiscount)+' ₽','discount');
+  });
+  addLine(lines,'Доставка (по городу)',fmt(order.deliveryPayable)+' ₽','');
+  if (order.conditionerSaving) addLine(lines,'Подарочные кондиционеры: '+order.freeCount,'−'+fmt(order.conditionerSaving)+' ₽','discount');
+  if (order.savings) addLine(lines,'Ваша экономия',fmt(order.savings)+' ₽','discount');
+  addLine(lines,'Стоимость работ составит',fmt(order.total)+' ₽','grand');
+  var minEl = document.getElementById('min-notice');
+  minEl.style.display = order.minOrderAdjustment ? 'block' : 'none';
+  minEl.textContent = order.minOrderAdjustment ? 'Применён минимальный заказ '+fmt(PRICES.min_order)+' ₽. Доплата: '+fmt(order.minOrderAdjustment)+' ₽.' : '';
+  document.getElementById('result-title').textContent = 'Расчёт по вашим данным — '+fmt(order.total)+' ₽';
+  document.getElementById('result-sub').textContent = 'Если указанные данные совпадут после приёмки — цена не изменится.';
+  return order;
 }
 
 function showResult() {
-  var servicesTotal = state.rugs.reduce(function(acc, rug) { return acc + calcRug(rug).total; }, 0);
-  var discPct = getDiscountPct();
-  var discAmt = Math.round(servicesTotal * discPct / 100);
-  var afterDisc = servicesTotal - discAmt;
-  var grand = Math.max(afterDisc + PRICES.delivery, PRICES.min_order);
-  var appliedMin = grand - (afterDisc + PRICES.delivery);
-
-  var lines = document.getElementById('result-lines');
-  lines.innerHTML = '';
-
-  // Per-rug lines
-  state.rugs.forEach(function(rug, i) {
-    var info = calcRug(rug);
-    var extStr = info.extras.length ? ' + ' + info.extras.join(', ') : '';
-    addLine(lines, PRICES.base[rug.type].icon + ' Ковёр #' + (i+1) + ' — ' + rug.width + '×' + rug.length + ' м, ' + PRICES.base[rug.type].desc + extStr, fmt(info.total) + ' ₽', '');
-  });
-
-  addLine(lines, 'Сумма', fmt(servicesTotal) + ' ₽', '');
-
-  if (discPct > 0) {
-    var reason = state.isLoyal ? 'повторный заказ' : state.rugs.length + ' ковра/ковров';
-    addLine(lines, 'Скидка ' + discPct + '% (' + reason + ')', '−' + fmt(discAmt) + ' ₽', 'discount');
-  }
-
-  addLine(lines, 'Доставка (по городу)', fmt(PRICES.delivery) + ' ₽', '');
-
-  var sep = document.createElement('div');
-  sep.style.cssText = 'border-top:2px solid var(--border);margin:8px 0;';
-  lines.appendChild(sep);
-
-  addLine(lines, 'Стоимость работ составит', fmt(grand) + ' ₽', 'grand');
-
-  var minEl = document.getElementById('min-notice');
-  if (appliedMin > 0) {
-    minEl.style.display = 'block';
-    minEl.textContent = 'Применён минимальный заказ ' + fmt(PRICES.min_order) + ' ₽. Доплата: ' + fmt(appliedMin) + ' ₽.';
-  } else {
-    minEl.style.display = 'none';
-  }
-
-  // Заголовок результата без имени (имя будет добавлено позже в контактах)
-  document.getElementById('result-title').textContent = 'Расчёт по вашим данным — ' + fmt(grand) + ' ₽';
-  document.getElementById('result-sub').textContent = 'Если указанные данные совпадут после приёмки — цена не изменится.';
-
-  state.history.push(6);
-  showScreen(6);
+  if (!state.rugs.length) return;
+  refreshOrderViews(); state.history.push(6); showScreen(6);
 }
 
-function addLine(cont, label, value, cls) {
-  var div = document.createElement('div');
-  div.className = 'result-line' + (cls ? ' ' + cls : '');
-  div.innerHTML = '<span>' + label + '</span><span>' + value + '</span>';
-  cont.appendChild(div);
+function addLine(cont,label,value,cls) {
+  var div = document.createElement('div'); div.className = 'result-line'+(cls?' '+cls:'');
+  var name = document.createElement('span'), amount = document.createElement('span');
+  name.textContent = label; amount.textContent = value;
+  div.appendChild(name); div.appendChild(amount); cont.appendChild(div);
 }
+
+function buildOrderData() {
+  var order = calculateOrder();
+  return {
+    analytics: window.PMKQuizAnalytics && window.PMKQuizAnalytics.context || null,
+    name:state.name,phone:state.phone,address:state.email||'',
+    rugs:state.rugs.map(function(rug,i) {
+      var line = order.lines[i];
+      return {id:rug.id,number:i+1,width:rug.width,length:rug.length,area:line.raw.area,type:rug.type,extras:line.raw.extras,
+        total:line.total,originalTotal:line.raw.total,washing:line.raw.washing,conditioner:line.conditioner,
+        conditionerGift:line.gift,washDiscount:line.washDiscount,loyalDiscount:line.loyalDiscount};
+    }),
+    servicesTotal:order.servicesTotal,discount:order.discount+order.conditionerSaving,discountPercent:order.discountPercent,
+    delivery:order.delivery,deliveryDiscount:order.deliveryDiscount,minOrderAdjustment:order.minOrderAdjustment,total:order.total,
+    promotions:{additionalRugDiscount:order.washDiscount,loyalDiscount:order.loyalDiscount,conditionerSaving:order.conditionerSaving,freeConditioners:order.freeCount},
+    timestamp:new Date().toISOString()
+  };
+}
+
 
 // syncUcalc удалена - больше не используется
 
@@ -2042,42 +2283,8 @@ function submitOrder() {
     return;
   }
 
-  // Пересчитываем итог с учётом актуальных данных
-  var servicesTotal = state.rugs.reduce(function(acc, rug) { return acc + calcRug(rug).total; }, 0);
-  var discPct = getDiscountPct();
-  var discAmt = Math.round(servicesTotal * discPct / 100);
-  var afterDisc = servicesTotal - discAmt;
-  var grand = Math.max(afterDisc + PRICES.delivery, PRICES.min_order);
-  var appliedMin = grand - (afterDisc + PRICES.delivery);
-
-  // Формируем данные для отправки в Google Apps Script → MAX
-  var rugsData = state.rugs.map(function(rug, i) {
-    var info = calcRug(rug);
-    return {
-      number: i + 1,
-      width: rug.width,
-      length: rug.length,
-      area: info.area,
-      type: rug.type,
-      extras: info.extras,
-      total: info.total
-    };
-  });
-
-  var orderData = {
-    analytics: window.PMKQuizAnalytics && window.PMKQuizAnalytics.context || null,
-    name: state.name,
-    phone: state.phone,
-    address: state.email || '', // используем поле email как адрес
-    rugs: rugsData,
-    servicesTotal: servicesTotal,
-    discount: discAmt,
-    discountPercent: discPct,
-    delivery: PRICES.delivery,
-    minOrderAdjustment: appliedMin,
-    total: grand,
-    timestamp: new Date().toISOString()
-  };
+  // The displayed amount and submission use the same pricing function.
+  var orderData = buildOrderData();
 
   // URL Google Apps Script
   var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPtjIMCq7uYlvIKyiTeAXDoRIXPsUzwKShYJatM3aONmwaS8YgsdP-F_awi83zBxQm3g/exec';
@@ -2118,10 +2325,13 @@ function submitOrder() {
 }
 
 function restartQuiz() {
-  state = { currentScreen: 1, history: [1], rugs: [], cur: { type: null, width: 2, length: 3, extras: {} }, isLoyal: false, name: '', phone: '', email: '' };
+  state = { currentScreen: 1, history: [1], rugs: [], cur: { type: null, width: 2, length: 3, extras: {} }, isLoyal: false, nextRugId: 1, promo:{status:'unseen',beforeIds:[]}, editingRugId:null, giftCount:0, lastConditionerOffer:null, name: '', phone: '', email: '' };
   var loyalToggle = document.getElementById('loyal-toggle');
   if (loyalToggle) loyalToggle.classList.remove('on');
   document.getElementById('btn-order').style.display = 'inline-flex';
+  document.getElementById('inp-width').value = 2;
+  document.getElementById('inp-length').value = 3;
+  refreshOrderViews();
   updateSliders();
   showScreen(1, true);
 }
@@ -2217,5 +2427,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- PMK_ANALYTICS_ADAPTER -->
 <script src="https://pmk-analytics.176.124.218.88.sslip.io/quiz-adapter.js"></script>
+
+<dialog id="rug-discount-offer" class="rug-offer-dialog" aria-labelledby="rug-offer-title" aria-describedby="rug-offer-description">
+  <button type="button" class="rug-offer-close" onclick="declineRugOffer()" aria-label="Закрыть и продолжить оформление">×</button>
+  <h2 id="rug-offer-title"></h2>
+  <p id="rug-offer-description">Скидка действует на стирку дополнительного ковра и всех последующих, которые вы добавите сейчас. Ранее добавленные ковры — по полной стоимости.</p>
+  <button type="button" class="btn btn-primary" id="rug-offer-accept" onclick="acceptRugOffer()" autofocus></button>
+  <button type="button" class="btn btn-ghost" onclick="declineRugOffer()">Продолжить оформление</button>
+</dialog>
+<script>
+(function(){
+ var dialog = document.getElementById('rug-discount-offer');
+ dialog.addEventListener('cancel',function(e){e.preventDefault();declineRugOffer();});
+ dialog.addEventListener('close',function(){if(state.promo.status==='shown')declineRugOffer();});
+ dialog.addEventListener('click',function(e){if(e.target!==dialog)return;var r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)declineRugOffer();});
+})();
+</script>
+
 </body>
 </html>
