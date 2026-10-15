@@ -1296,6 +1296,21 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
  #result-actions .btn { min-width:125px; white-space:normal; font-size:12px; }
 }
 .referral-panel{border:1px solid rgba(232,184,75,.4);border-radius:16px;padding:16px;margin:18px 0;text-align:left}.referral-choice{display:flex;align-items:center;gap:12px;min-height:44px;font-weight:600}.referral-choice input{width:22px;height:22px;accent-color:#e8b84b}.referral-panel [hidden]{display:none!important}#referral-fields>label{display:block;margin:14px 0 8px;font-size:14px;line-height:1.5}#referral-phone{width:100%;box-sizing:border-box;background:#171717;color:white;border:1px solid #777;border-radius:10px;padding:14px;font:inherit;font-size:16px}#referral-status{font-size:13px;line-height:1.65;color:#e6d6b2}#referral-fields a{color:#e8b84b;font-size:13px}
+
+/* PMK stable interaction: changes within a step must not replay its entrance. */
+.screen,.screen.active,.screen.back,
+.screen.active .screen-title,.screen.active .screen-sub,
+.screen.active .option-tile,.screen.active .contact-field,
+.screen.active .result-line,.screen.active .rug-chip {
+  animation:none!important;
+  filter:none!important;
+}
+.screen.active .card::after { animation:none!important;display:none!important; }
+.option-tile { transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease; }
+.option-tile:hover { transform:none!important; }
+#rugs-added [hidden] { display:none!important; }
+.option-tile:focus-visible { outline:2px solid var(--yellow);outline-offset:3px; }
+
 </style>
 <style id="pmk-result-trust-styles">
 .result-trust-card{margin-top:20px;padding:18px;border:1px solid rgba(85,190,120,.3);border-radius:16px;background:rgba(85,190,120,.07);color:var(--text);font-size:13px;line-height:1.55}.result-trust-card p{margin:0 0 10px}.result-trust-card__check{color:#9be0ae;font-weight:800}.result-trust-card>strong{display:block;margin-top:10px;color:#fff;font-size:14px}.result-trust-card details{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}.result-trust-card summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700}.result-trust-card details p{margin:6px 0 0;color:var(--muted)}.pmk-problem-context{display:none;margin:14px 0 0;padding:10px 12px;border-left:3px solid var(--yellow);border-radius:0 8px 8px 0;background:rgba(245,197,24,.08);color:var(--text);font-size:13px;line-height:1.4}.pmk-problem-context.is-visible{display:block}@media(max-width:520px){#result-actions{flex-direction:column!important}#result-actions .btn{min-height:48px;width:100%}.result-trust-card{padding:15px;font-size:12px}}
@@ -1622,9 +1637,10 @@ function scrollQuizIntoView() {
   }
 }
 function showScreen(n, isBack) {
+  var target = document.getElementById('screen-' + n);
+  if (target.classList.contains('active') && state.currentScreen === n) return;
   var screens = document.querySelectorAll('.screen');
   screens.forEach(function(sc) { sc.classList.remove('active', 'back'); });
-  var target = document.getElementById('screen-' + n);
   if (isBack) target.classList.add('back');
   target.classList.add('active');
   state.currentScreen = n;
@@ -1791,12 +1807,27 @@ window.matchMedia('(max-width:768px)').addEventListener('change', function(event
 });
 function renderExtrasOptions() {
   var cont = document.getElementById('extras-options');
+  // Selection changes update the existing tiles; preserve details, focus and images.
+  if (cont.children.length === EXTRAS.length && Array.from(cont.children).every(function(tile, i) { return tile.dataset.extraKey === EXTRAS[i].key; })) {
+    EXTRAS.forEach(function(ex, i) {
+      var tile = cont.children[i], selected = !!state.cur.extras[ex.key];
+      tile.classList.toggle('selected', selected);
+      tile.setAttribute('aria-checked', String(selected));
+      var check = tile.querySelector('.option-check'), value = selected ? '✓' : '';
+      if (check.textContent !== value) check.textContent = value;
+    });
+    return;
+  }
   var expanded = Array.from(cont.querySelectorAll('details[open]')).map(function(d){return d.dataset.extra;});
   cont.innerHTML = '';
   EXTRAS.forEach(function(ex) {
     var sel = !!state.cur.extras[ex.key];
     var tile = document.createElement('div');
     tile.className = 'option-tile multi' + (sel ? ' selected' : '');
+    tile.dataset.extraKey = ex.key;
+    tile.setAttribute('role', 'checkbox');
+    tile.setAttribute('aria-checked', String(sel));
+    tile.tabIndex = 0;
     tile.innerHTML =
       '<span class="option-icon">' + ex.icon + '</span>' +
       '<div class="option-text">' +
@@ -1811,6 +1842,10 @@ function renderExtrasOptions() {
       if (event.target.closest('.extra-details')) return;
       state.cur.extras[ex.key] = !state.cur.extras[ex.key];
       renderExtrasOptions();
+    };
+    tile.onkeydown = function(event) {
+      if (event.target.closest('.extra-details')) return;
+      if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); tile.click(); }
     };
     cont.appendChild(tile);
   });
@@ -1944,33 +1979,59 @@ function editRug(id) {
 function renderRugList() {
   var order = calculateOrder();
   var cont = document.getElementById('rugs-added');
-  cont.innerHTML = '';
+  function text(node, value) { if (node.textContent !== value) node.textContent = value; }
+  var existing = new Map(Array.from(cont.children).map(function(node) { return [node.dataset.rugId, node]; }));
   state.rugs.forEach(function(rug, i) {
-    var line = order.lines[i], info = line.raw;
-    var chip = document.createElement('div'); chip.className = 'rug-chip';
-    var serviceText = info.extras.length ? ' · ' + info.extras.join(', ') : '';
-    var discount = line.washDiscount + line.loyalDiscount;
-    chip.innerHTML = '<div class="rug-chip-info">' +
-      '<div class="rug-chip-title">' + PRICES.base[rug.type].icon + ' Ковёр #' + (i+1) + ' · ' + rug.width + '×' + rug.length + ' м (' + info.area + ' м²)</div>' +
-      '<div class="rug-chip-sub">' + rug.type + serviceText + '</div>' +
-      '<div class="rug-price-detail">Стирка: ' + fmt(info.washing) + ' ₽' +
-      (line.washDiscount ? ' · скидка ' + PRICES.additional_rug_percent + '%: −' + fmt(line.washDiscount) + ' ₽' : '') + '</div>' +
-      (line.loyalDiscount ? '<div class="rug-price-detail">Постоянный клиент: −' + fmt(line.loyalDiscount) + ' ₽ (' + PRICES.loyal_percent + '%)</div>' : '') +
-      (rug.extras.conditioner ? '<div class="rug-conditioner-selected">✓ Кондиционер: ' + (line.gift ? 'в подарок · 0 ₽' : fmt(line.conditioner) + ' ₽') +
-        ' <button type="button" class="rug-service-remove" onclick="setRugConditioner(\'' + rug.id + '\',false)" aria-label="Убрать кондиционер с ковра ' + (i+1) + '">Убрать</button></div>' :
-        '<button type="button" class="rug-conditioner-add" onclick="setRugConditioner(\'' + rug.id + '\',true)" aria-label="Добавить кондиционер для ковра ' + (i+1) + ' за ' + PRICES.conditioner_per_rug + ' рублей">+ Добавить кондиционер — ' + fmt(PRICES.conditioner_per_rug) + ' ₽</button>') +
-      '<button type="button" class="rug-edit" onclick="editRug(\'' + rug.id + '\')">Изменить ковёр</button></div>' +
-      '<div class="rug-chip-price" tabindex="-1" aria-label="Стоимость ковра ' + (i+1) + '">' +
-      (discount || line.gift ? '<del>' + fmt(info.total) + ' ₽</del> ' : '') + fmt(line.total) + ' ₽</div>' +
-      '<button type="button" class="rug-chip-del" onclick="removeRug(' + i + ')" aria-label="Удалить ковёр ' + (i+1) + '">✕</button>';
-    cont.appendChild(chip);
+    var line = order.lines[i], info = line.raw, chip = existing.get(rug.id);
+    if (!chip) {
+      chip = document.createElement('div'); chip.className = 'rug-chip'; chip.dataset.rugId = rug.id;
+      chip.innerHTML = '<div class="rug-chip-info">' +
+        '<div class="rug-chip-title"><span data-rug-icon></span><span data-rug-title></span></div>' +
+        '<div class="rug-chip-sub"></div><div class="rug-price-detail" data-wash-detail></div>' +
+        '<div class="rug-price-detail" data-loyal-detail hidden></div>' +
+        '<div class="rug-conditioner-selected" hidden><span data-conditioner-text></span> <button type="button" class="rug-service-remove">Убрать</button></div>' +
+        '<button type="button" class="rug-conditioner-add" data-add-conditioner></button>' +
+        '<button type="button" class="rug-edit">Изменить ковёр</button></div>' +
+        '<div class="rug-chip-price" tabindex="-1"><del hidden></del><span data-rug-total></span></div>' +
+        '<button type="button" class="rug-chip-del">✕</button>';
+    }
+    existing.delete(rug.id);
+    // Keep card and control nodes while reconciling their current order.
+    if (cont.children[i] !== chip) cont.insertBefore(chip, cont.children[i] || null);
+    var icon = chip.querySelector('[data-rug-icon]');
+    if (icon.dataset.type !== rug.type) { icon.innerHTML = PRICES.base[rug.type].icon; icon.dataset.type = rug.type; }
+    text(chip.querySelector('[data-rug-title]'), ' Ковёр #' + (i+1) + ' · ' + rug.width + '×' + rug.length + ' м (' + info.area + ' м²)');
+    text(chip.querySelector('.rug-chip-sub'), rug.type + (info.extras.length ? ' · ' + info.extras.join(', ') : ''));
+    text(chip.querySelector('[data-wash-detail]'), 'Стирка: ' + fmt(info.washing) + ' ₽' + (line.washDiscount ? ' · скидка ' + PRICES.additional_rug_percent + '%: −' + fmt(line.washDiscount) + ' ₽' : ''));
+    var loyal = chip.querySelector('[data-loyal-detail]'); loyal.hidden = !line.loyalDiscount;
+    text(loyal, line.loyalDiscount ? 'Постоянный клиент: −' + fmt(line.loyalDiscount) + ' ₽ (' + PRICES.loyal_percent + '%)' : '');
+    chip.querySelector('.rug-conditioner-selected').hidden = !rug.extras.conditioner;
+    text(chip.querySelector('[data-conditioner-text]'), '✓ Кондиционер: ' + (line.gift ? 'в подарок · 0 ₽' : fmt(line.conditioner) + ' ₽'));
+    var remove = chip.querySelector('.rug-service-remove');
+    remove.onclick = function() { setRugConditioner(rug.id, false); };
+    remove.setAttribute('aria-label', 'Убрать кондиционер с ковра ' + (i+1));
+    var add = chip.querySelector('[data-add-conditioner]'); add.hidden = !!rug.extras.conditioner;
+    add.className = rug.extras.conditioner ? 'rug-conditioner-add--selected' : 'rug-conditioner-add';
+    text(add, '+ Добавить кондиционер — ' + fmt(PRICES.conditioner_per_rug) + ' ₽');
+    add.onclick = function() { setRugConditioner(rug.id, true); };
+    add.setAttribute('aria-label', 'Добавить кондиционер для ковра ' + (i+1) + ' за ' + PRICES.conditioner_per_rug + ' рублей');
+    chip.querySelector('.rug-edit').onclick = function() { editRug(rug.id); };
+    var price = chip.querySelector('.rug-chip-price'), original = price.querySelector('del');
+    original.hidden = !(line.washDiscount || line.loyalDiscount || line.gift);
+    text(original, fmt(info.total) + ' ₽ ');
+    text(price.querySelector('[data-rug-total]'), fmt(line.total) + ' ₽');
+    price.setAttribute('aria-label', 'Стоимость ковра ' + (i+1));
+    var del = chip.querySelector('.rug-chip-del'); del.onclick = function() { removeRug(state.rugs.findIndex(function(r) { return r.id === rug.id; })); };
+    del.setAttribute('aria-label', 'Удалить ковёр ' + (i+1));
   });
+  existing.forEach(function(node) { node.remove(); });
   renderConditionerOffer(order);
-  document.getElementById('cart-total').textContent = 'Итого: ' + fmt(order.total) + ' ₽';
-  document.getElementById('cart-savings').textContent = order.savings ? 'Ваша экономия: ' + fmt(order.savings) + ' ₽' : '';
-  document.getElementById('cart-minimum').textContent = order.minOrderAdjustment ? 'С учётом минимального заказа ' + fmt(PRICES.min_order) + ' ₽' : '';
+  text(document.getElementById('cart-total'), 'Итого: ' + fmt(order.total) + ' ₽');
+  text(document.getElementById('cart-savings'), order.savings ? 'Ваша экономия: ' + fmt(order.savings) + ' ₽' : '');
+  text(document.getElementById('cart-minimum'), order.minOrderAdjustment ? 'С учётом минимального заказа ' + fmt(PRICES.min_order) + ' ₽' : '');
   if (state.currentScreen === 4) trackConditionerOffer();
 }
+
 function renderConditionerOffer(order) {
   var el = document.getElementById('conditioner-offer'), count = state.rugs.length;
   el.hidden = count < 2;
