@@ -2174,7 +2174,8 @@ function goToContacts() {
     modal.style.top = Math.max(window.scrollY + 16, anchor.getBoundingClientRect().top + window.scrollY + 30) + 'px';
     modal.showModal();
     promotionEvent('calculator_offer_shown', {count:count,percent:PRICES.additional_rug_percent});
-    if (parent !== window) parent.postMessage({type:'pmk-quiz-mobile-step',offset:Math.max(0,parseFloat(modal.style.top)-16),height:document.body.scrollHeight},'*');
+    // Leave room for the site's fixed mobile navigation above the iframe dialog.
+    if (parent !== window) parent.postMessage({type:'pmk-quiz-mobile-step',offset:Math.max(0,parseFloat(modal.style.top)-80),height:document.body.scrollHeight},'*');
     else modal.scrollIntoView({block:'center'});
     return;
   }
