@@ -1614,28 +1614,38 @@ function updateProgress() {
   document.getElementById('step-num').textContent = s > 0 ? 'Шаг ' + s + ' из ' + TOTAL_STEPS : '';
 }
 function scrollQuizIntoView() {
-  var isMobile = window.matchMedia && window.matchMedia('(max-width: 980px)').matches;
-  var target = isMobile ? document.querySelector('.quiz-shell') : document.getElementById('pmk-quiz-calc');
-  if (!target) return;
-  if (isMobile && window.parent !== window) {
-    var section = document.querySelector('.pmk-quiz-section');
-    var contentHeight = section ? Math.ceil(section.offsetTop + section.offsetHeight + parseFloat(getComputedStyle(document.body).paddingBottom || 0)) : document.body.scrollHeight;
-    window.parent.postMessage({
-      type: 'pmk-quiz-mobile-step',
-      offset: Math.max(0, target.getBoundingClientRect().top + window.scrollY - 10),
-      height: contentHeight
-    }, '*');
-    return;
-  }
-  var offset = isMobile ? 10 : 20;
-  var currentY = window.pageYOffset || document.documentElement.scrollTop || 0;
-  var targetY = Math.max(target.getBoundingClientRect().top + currentY - offset, 0);
-  try {
-    window.scrollTo({ top: targetY, behavior: 'smooth' });
-  } catch (e) {
-    window.scrollTo(0, targetY);
-  }
+  // Navigate the visible step, including scrollable ancestors outside the iframe.
+  // Scrolling window inside an iframe alone leaves the host page at the old step.
+  var sequence = (scrollQuizIntoView.sequence || 0) + 1;
+  scrollQuizIntoView.sequence = sequence;
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      if (sequence !== scrollQuizIntoView.sequence || document.querySelector('dialog[open]')) return;
+      var screen = document.querySelector('.screen.active');
+      var target = screen && (screen.querySelector('.card') || screen);
+      if (!target) return;
+      // The native desktop site menu can wrap at intermediate widths.
+      var inFrame = window.parent !== window;
+      var gap = inFrame ? (window.innerWidth >= 640 && window.innerWidth <= 1100 ? 192 : 128) : 20;
+      target.style.scrollMarginTop = gap + 'px';
+      var title = target.querySelector('.screen-title, .result-title');
+      if (title) { title.setAttribute('tabindex', '-1'); title.style.outline = 'none'; title.focus({preventScroll:true}); }
+      var anchor;
+      if (inFrame && gap > 128) {
+        // The host iframe has its own 128px scroll margin. Shift the scroll
+        // point above the card to accommodate the taller, wrapped site menu.
+        anchor = document.createElement('span');
+        anchor.setAttribute('aria-hidden', 'true');
+        anchor.style.cssText = 'position:absolute;left:0;width:1px;height:1px;pointer-events:none;';
+        anchor.style.top = (target.getBoundingClientRect().top + window.scrollY - (gap - 128)) + 'px';
+        document.body.appendChild(anchor);
+      }
+      (anchor || target).scrollIntoView({block:'start', inline:'nearest', behavior:'instant'});
+      if (anchor) anchor.remove();
+    });
+  });
 }
+
 function showScreen(n, isBack) {
   var target = document.getElementById('screen-' + n);
   if (target.classList.contains('active') && state.currentScreen === n) return;
