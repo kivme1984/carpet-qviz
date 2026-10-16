@@ -2441,5 +2441,18 @@ document.addEventListener('DOMContentLoaded', function() {
  dialog.addEventListener('click',function(e){if(e.target!==dialog)return;var r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)declineRugOffer();});
 })();
 </script>
+<script>
+(function(){
+ var site='https://pro-moykover.tilda.ws';
+ function activate(){state.referral=state.referral||{phone:'',tracked:false};state.referral.enabled=true;updateReferral();}
+ if(new URLSearchParams(location.search).get('referral')==='1')activate();
+ window.addEventListener('message',function(e){if(e.origin===site&&e.source===window.parent&&e.data&&e.data.type==='pmk-referral-activate')activate();});
+ if(window.parent!==window)window.parent.postMessage({type:'pmk-referral-ready'},site);
+ var oldBuild=buildOrderData;
+ buildOrderData=function(){var data=oldBuild.apply(this,arguments);if(!state.registryOrderId)state.registryOrderId=crypto.randomUUID();data.orderId=state.registryOrderId;if(data.referral){data.referral.source='recommend';data.referral.reward={quantity:1,value:350,status:'pending_paid_completed',validMonths:24};data.referral.paymentStatus='unpaid';data.referral.fulfillmentStatus='not_completed';}return data;};
+ var oldRestart=restartQuiz;restartQuiz=function(){oldRestart.apply(this,arguments);state.registryOrderId=null;if(new URLSearchParams(location.search).get('referral')==='1')activate();};
+})();
+
+</script>
 </body>
 </html>
