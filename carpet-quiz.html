@@ -1188,7 +1188,7 @@
 
         <button class="btn btn-ghost" onclick="goBack()">← Назад</button>
 
-        <button class="btn btn-primary" onclick="submitOrder()">Отправить заявку ✓</button>
+        <label style="display:flex;gap:10px;margin:16px 0;text-align:left"><input id="legacy-order-consent" type="checkbox" required><span>Согласен(на) на обработку имени, телефона и данных ковров для связи и выполнения заявки. Данные сохраняются в защищённом портале «Промой Ковер»; копия передаётся в действующий обработчик календаря. Уточнение и удаление данных: +7 929 053-03-22.</span></label><button class="btn btn-primary" onclick="submitOrder()">Отправить заявку ✓</button>
 
       </div>
 
@@ -1872,7 +1872,7 @@ function addLine(cont, label, value, cls) {
 
 
 
-function submitOrder() {
+function submitOrder() {if(!document.getElementById('legacy-order-consent').checked){alert('Подтвердите согласие на обработку данных заявки.');return;}
 
   // Собираем контактные данные
 
@@ -1992,21 +1992,7 @@ function submitOrder() {
 
   // Отправляем данные
 
-  fetch(SCRIPT_URL, {
-
-    method: 'POST',
-
-    mode: 'no-cors', // Google Apps Script требует no-cors
-
-    headers: {
-
-      'Content-Type': 'application/json'
-
-    },
-
-    body: JSON.stringify(orderData)
-
-  })
+  (async function(){if(!window.PMKLeadPortal)throw Error('portal_unavailable');var details=Object.assign({},orderData);delete details.name;delete details.phone;delete details.analytics;delete details.timestamp;details.sourceLabel='Отдельный калькулятор';var receipt=await PMKLeadPortal.submit({source:'calculator',name:state.name,phone:state.phone,consent:document.getElementById('legacy-order-consent').checked,details:details});fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)}).catch(function(){});return receipt;})()
 
   .then(function() {
 
@@ -2108,7 +2094,7 @@ window.addEventListener('load', function() {
 
 </script>
 
+<script src="https://pmk-analytics.176.124.218.88.sslip.io/lead-client.js?v=20261101-r1" defer></script>
 </body>
 
 </html>
-
