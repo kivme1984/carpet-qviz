@@ -6697,34 +6697,21 @@ function submitOrder() {
   // Отправляем данные
 
 
-  fetch(SCRIPT_URL, {
-
-
-    method: 'POST',
-
-
-    mode: 'no-cors', // Google Apps Script требует no-cors
-
-
-    headers: {
-
-
-      'Content-Type': 'application/json'
-
-
-    },
-
-
-    body: JSON.stringify(orderData)
-
-
-  })
+  (async function(){
+    if(!window.PMKLeadPortal)throw Error('portal_unavailable');
+    var details=Object.assign({},orderData);delete details.name;delete details.phone;delete details.analytics;delete details.timestamp;
+    var receipt=await PMKLeadPortal.submit({source:'calculator',name:state.name,phone:state.phone,consent:document.getElementById('order-data-consent')?.checked===true,details:details});
+    // Existing Calendar delivery remains a secondary best-effort channel.
+    // Its opaque response is never used as proof of portal acceptance.
+    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)}).catch(function(){});
+    return receipt;
+  })()
 
 
   .then(function() {
 
 
-    // no-cors не даёт читать response
+    // Portal returns a readable receipt only after durable database insertion.
 
 
     // Показываем успех с небольшой задержкой для визуального эффекта
@@ -7342,7 +7329,7 @@ document.addEventListener('DOMContentLoaded', function() {
  panel.id='referral-consent-panel';panel.style.cssText='margin:18px 0;font-size:12px;line-height:1.5;color:#b8bdc2';
 
 
- panel.innerHTML='<label style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;cursor:pointer"><input id="earned-gifts-request" type="checkbox" style="margin-top:4px"><span>Хочу использовать накопленные подарки за рекомендации. Остаток и итог проверит менеджер.</span></label><label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer"><input id="order-data-consent" type="checkbox" required style="margin-top:4px"><span>Согласен на обработку данных для оформления заказа и учёта рекомендаций.</span></label><details style="margin:10px 0"><summary style="cursor:pointer">Как используются данные</summary><p>Имя, телефон и адрес нужны «Промой Ковер» для связи и выполнения заказа. Номер рекомендателя — для проверки истории и учёта подарков. Данные заявки сохраняются в Google Календаре и защищённом реестре фабрики. Телефоны не передаются в аналитику и не включаются в публичные ссылки. По вопросам обработки и исправления данных: +7 (929) 053-03-22. Рекомендации и баланс подтверждает менеджер.</p></details><p id="order-consent-status" role="alert"></p>';
+ panel.innerHTML='<label style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;cursor:pointer"><input id="earned-gifts-request" type="checkbox" style="margin-top:4px"><span>Хочу использовать накопленные подарки за рекомендации. Остаток и итог проверит менеджер.</span></label><label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer"><input id="order-data-consent" type="checkbox" required style="margin-top:4px"><span>Согласен на обработку данных для оформления заказа и учёта рекомендаций.</span></label><details style="margin:10px 0"><summary style="cursor:pointer">Как используются данные</summary><p>Имя, телефон и адрес нужны «Промой Ковер» для связи и выполнения заказа. Номер рекомендателя — для проверки истории и учёта подарков. Данные заявки сохраняются в защищённом портале фабрики. Копия также передаётся в действующий обработчик Google Календаря; его приём проверяется отдельно. Телефоны не передаются в аналитику и не включаются в публичные ссылки. По вопросам обработки и исправления данных: +7 (929) 053-03-22. Рекомендации и баланс подтверждает менеджер.</p></details><p id="order-consent-status" role="alert"></p>';
 
 
  fields.parentElement.insertAdjacentElement('afterend',panel);
@@ -7399,6 +7386,7 @@ addEventListener('message',e=>{if(e.source===parent&&e.origin==='https://pro-moy
 window.PMKPerformance={version:'20261101-r3',getState:()=>({scans,documents:documents.size,pausedDecorations:controlled.size,reducedMotion:reduced.matches,lightweight,parentVisible})};
 })();
 </script>
+<script src="https://pmk-analytics.176.124.218.88.sslip.io/lead-client.js?v=20261101-r1" defer></script>
 </body>
 
 
