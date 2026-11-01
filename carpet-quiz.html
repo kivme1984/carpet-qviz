@@ -1994,7 +1994,7 @@ function submitOrder() {if(!document.getElementById('legacy-order-consent').chec
 
   (async function(){if(!window.PMKLeadPortal)throw Error('portal_unavailable');var details=Object.assign({},orderData);delete details.name;delete details.phone;delete details.analytics;delete details.timestamp;details.sourceLabel='Отдельный калькулятор';var receipt=await PMKLeadPortal.submit({source:'calculator',name:state.name,phone:state.phone,consent:document.getElementById('legacy-order-consent').checked,details:details});fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)}).catch(function(){});return receipt;})()
 
-  .then(function() {
+  .then(function(receipt) {
 
     // no-cors не даёт читать response
 
@@ -2002,9 +2002,9 @@ function submitOrder() {if(!document.getElementById('legacy-order-consent').chec
 
     setTimeout(function() {
 
-      resultTitle.textContent = state.name + ', заявка принята! ✓';
+      resultTitle.textContent = 'Заявка № '+receipt.number+' принята';
 
-      resultSub.textContent = 'Мы свяжемся с вами в ближайшее время по номеру ' + state.phone;
+      resultSub.textContent = new Date(receipt.createdAt).toLocaleString('ru-RU',{timeZone:'Europe/Moscow'})+' · '+'Мы свяжемся с вами в ближайшее время по номеру ' + state.phone;
 
       // Скрываем кнопку "Оформить заказ" - заявка уже отправлена
 
