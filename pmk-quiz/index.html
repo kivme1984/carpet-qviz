@@ -6703,7 +6703,7 @@ function submitOrder() {
     var receipt=await PMKLeadPortal.submit({source:'calculator',name:state.name,phone:state.phone,consent:document.getElementById('order-data-consent')?.checked===true,details:details});
     // Existing Calendar delivery remains a secondary best-effort channel.
     // Its opaque response is never used as proof of portal acceptance.
-    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)}).catch(function(){});
+    if(receipt.destination==='legacy'){window.pmkCalendarCopies=window.pmkCalendarCopies||new Set();if(!window.pmkCalendarCopies.has(receipt.id)){window.pmkCalendarCopies.add(receipt.id);fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)}).catch(function(){});}}
     return receipt;
   })()
 
