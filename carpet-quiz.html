@@ -1992,7 +1992,7 @@ function submitOrder() {if(!document.getElementById('legacy-order-consent').chec
 
   // Отправляем данные
 
-  (async function(){if(!window.PMKLeadPortal)throw Error('portal_unavailable');var details=Object.assign({},orderData);delete details.name;delete details.phone;delete details.analytics;delete details.timestamp;details.sourceLabel='Отдельный калькулятор';var receipt=await PMKLeadPortal.submit({source:'calculator',name:state.name,phone:state.phone,consent:document.getElementById('legacy-order-consent').checked,details:details});fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)}).catch(function(){});return receipt;})()
+  (async function(){if(!window.PMKLeadPortal)throw Error('portal_unavailable');var details=Object.assign({},orderData);delete details.name;delete details.phone;delete details.analytics;delete details.timestamp;details.sourceLabel='Отдельный калькулятор';var receipt=await PMKLeadPortal.submit({source:'calculator',name:state.name,phone:state.phone,consent:document.getElementById('legacy-order-consent').checked,details:details});if(receipt.destination==='legacy'){window.pmkCalendarCopies=window.pmkCalendarCopies||new Set();if(!window.pmkCalendarCopies.has(receipt.id)){window.pmkCalendarCopies.add(receipt.id);fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)}).catch(function(){});}}return receipt;})()
 
   .then(function(receipt) {
 
