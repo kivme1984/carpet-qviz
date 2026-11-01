@@ -6708,7 +6708,7 @@ function submitOrder() {
   })()
 
 
-  .then(function() {
+  .then(function(receipt) {
 
 
     // Portal returns a readable receipt only after durable database insertion.
@@ -6720,10 +6720,10 @@ function submitOrder() {
     setTimeout(function() {
 
 
-      resultTitle.textContent = state.name + ', заявка отправлена';
+      resultTitle.textContent = 'Заявка № '+receipt.number+' принята';
 
 
-      resultSub.textContent = 'Ожидайте звонка менеджера. Приём заявки и условия рекомендации требуют подтверждения. Ваш телефон: ' + state.phone;
+      resultSub.textContent = new Date(receipt.createdAt).toLocaleString('ru-RU',{timeZone:'Europe/Moscow'})+' · '+'Ожидайте звонка менеджера. Приём заявки и условия рекомендации требуют подтверждения. Ваш телефон: ' + state.phone;
 
 
       // Скрываем кнопку "Оформить заказ" - заявка уже отправлена
