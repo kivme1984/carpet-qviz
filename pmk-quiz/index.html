@@ -4664,11 +4664,12 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
     window.PMK_SELECTED_PROBLEM=name;
     var recommendations=[];
     var detail='Дополнительные услуги можно выбрать на шаге «Опции».';
-    if(name==='Пятна и грязь'){recommendations=['stain'];detail='Обычная грязь входит в стирку; удаление сложных пятен — на шаге «Опции».';}
-    else if(name==='После животных'){recommendations=['pet_hair'];detail='Если есть шерсть, выберите вычёсывание в «Опциях». Запах мочи — отдельная услуга.';}
-    else if(name==='Неприятный запах'){detail='Если причина — моча, выберите удаление запаха в «Опциях». Иные запахи уточним.';}
-    else if(name==='Пыль и серость'){detail='Обычно достаточно регулярной стирки.';}
+    if(name==='Пятна и грязь'){recommendations=['stain'];detail='Удаление пятен предварительно отмечено в «Опциях». Обычная грязь входит в стирку.';}
+    else if(name==='После животных'){recommendations=['pet_hair'];detail='Вычёсывание шерсти предварительно отмечено в «Опциях». При необходимости можно добавить удаление запаха мочи.';}
+    else if(name==='Неприятный запах'){recommendations=['odor'];detail='Предварительно отмечено удаление запаха мочи. Если запах другой, снимите эту отметку и уточните причину при оформлении.';}
+    else if(name==='Пыль и серость'){detail='Регулярная стирка уже включена в базовый расчёт. Дополнительные обработки не выбраны.';}
     window.PMK_PROBLEM_RECOMMENDED=recommendations;
+    if(typeof window.PMK_APPLY_SELECTED_PROBLEM==='function')window.PMK_APPLY_SELECTED_PROBLEM(name);
     if(!document.getElementById('pmk-recommended-extra-style')){
       var style=document.createElement('style');style.id='pmk-recommended-extra-style';
       style.textContent='.option-tile.pmk-problem-recommended{border-color:rgba(255,212,0,.65)!important}.option-tile.pmk-problem-recommended .option-title::after{content:" · Под вашу ситуацию";display:inline;color:#ffd400;font-size:12px;font-weight:700}';
@@ -4688,7 +4689,7 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
     if(!note){note=document.createElement('div');note.id='pmk-problem-context';note.className='pmk-problem-context';lead.insertAdjacentElement('afterend',note)}
 
 
-    note.textContent='Ваша ситуация: '+name+'. '+detail+' Сохраним выбор в заявке.';note.classList.add('is-visible');
+    note.textContent='Ваша ситуация: '+name+'. '+detail+' Выбранные услуги можно изменить; выбор сохранится в заявке.';note.classList.add('is-visible');
 
 
   }
@@ -4832,7 +4833,23 @@ var state = {
 };
 
 
-var TOTAL_STEPS = 6;
+// Apply the chosen site problem to the *actual* selected service state.
+ // The choice applies to the first configured rug only; additional rugs are chosen separately.
+ var pmkAutoAppliedProblemKey=null;
+ function pmkApplySelectedProblem(name){
+   var keys={'Пятна и грязь':'stain','После животных':'pet_hair','Неприятный запах':'odor'};
+   var key=keys[String(name||'').trim()]||null;
+   if(!state || !state.cur || !state.cur.extras || state.editingRugId || state.rugs.length) return;
+   if(pmkAutoAppliedProblemKey && pmkAutoAppliedProblemKey!==key){
+     delete state.cur.extras[pmkAutoAppliedProblemKey];
+   }
+   if(key)state.cur.extras[key]=true;
+   pmkAutoAppliedProblemKey=key;
+   if(state.currentScreen===3 && typeof renderExtrasOptions==='function')renderExtrasOptions();
+ }
+ window.PMK_APPLY_SELECTED_PROBLEM=pmkApplySelectedProblem;
+ pmkApplySelectedProblem(window.PMK_SELECTED_PROBLEM);
+ var TOTAL_STEPS = 6;
 
 
 function updateProgress() {
@@ -6780,6 +6797,10 @@ function restartQuiz() {
 
 
   state = { currentScreen: 1, history: [1], rugs: [], cur: { type: null, width: 2, length: 3, extras: {} }, isLoyal: false, nextRugId: 1, promo:{status:'unseen',beforeIds:[]}, editingRugId:null, giftCount:0, lastConditionerOffer:null, name: '', phone: '', email: '' };
+  pmkAutoAppliedProblemKey=null;
+  window.PMK_SELECTED_PROBLEM=null;
+  window.PMK_PROBLEM_RECOMMENDED=[];
+  var previousProblemNote=document.getElementById('pmk-problem-context');if(previousProblemNote)previousProblemNote.remove();
 
 
   var loyalToggle = document.getElementById('loyal-toggle');
