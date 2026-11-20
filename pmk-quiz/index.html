@@ -4661,6 +4661,22 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
 
 
     var name=String(value||'').trim();if(!name)return;
+    window.PMK_SELECTED_PROBLEM=name;
+    var recommendations=[];
+    var detail='На шаге «Опции» вы сможете выбрать дополнительные услуги, если они нужны.';
+    if(name==='Пятна и грязь'){recommendations=['stain'];detail='При сложных пятнах на шаге «Опции» выберите их удаление. Обычная грязь входит в регулярную стирку.';}
+    else if(name==='После животных'){recommendations=['pet_hair'];detail='Если в ковре есть шерсть, на шаге «Опции» выберите вычёсывание. Запах мочи оплачивается отдельно только при выборе этой обработки.';}
+    else if(name==='Неприятный запах'){detail='На шаге «Опции» можно выбрать удаление запаха мочи, если причина именно в нём. Иные запахи уточним при приёмке.';}
+    else if(name==='Пыль и серость'){detail='Для пыли и серости обычно достаточно регулярной стирки.';}
+    window.PMK_PROBLEM_RECOMMENDED=recommendations;
+    if(!document.getElementById('pmk-recommended-extra-style')){
+      var style=document.createElement('style');style.id='pmk-recommended-extra-style';
+      style.textContent='.option-tile.pmk-problem-recommended{border-color:rgba(255,212,0,.65)!important}.option-tile.pmk-problem-recommended .option-title::after{content:" · Под вашу ситуацию";display:inline;color:#ffd400;font-size:12px;font-weight:700}';
+      document.head.appendChild(style);
+    }
+    document.querySelectorAll('#extras-options .option-tile').forEach(function(tile){
+      tile.classList.toggle('pmk-problem-recommended',recommendations.indexOf(tile.dataset.extraKey)!==-1);
+    });
 
 
     var lead=document.querySelector('.value-lead');if(!lead)return;
@@ -4672,7 +4688,7 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
     if(!note){note=document.createElement('div');note.id='pmk-problem-context';note.className='pmk-problem-context';lead.insertAdjacentElement('afterend',note)}
 
 
-    note.textContent='Вы выбрали: '+name+'. Этот запрос добавлен к расчёту.';note.classList.add('is-visible');
+    note.textContent='Ваша ситуация: '+name+'. '+detail+' Выбор сохранится в заявке. Дополнительные работы не добавляются без вашего выбора.';note.classList.add('is-visible');
 
 
   }
@@ -5467,7 +5483,7 @@ function renderExtrasOptions() {
       var tile = cont.children[i], selected = !!state.cur.extras[ex.key];
 
 
-      tile.classList.toggle('selected', selected);
+      tile.classList.toggle('selected', selected);tile.classList.toggle('pmk-problem-recommended',!!(window.PMK_PROBLEM_RECOMMENDED||[]).includes(ex.key));
 
 
       tile.setAttribute('aria-checked', String(selected));
@@ -5503,7 +5519,7 @@ function renderExtrasOptions() {
     var tile = document.createElement('div');
 
 
-    tile.className = 'option-tile multi' + (sel ? ' selected' : '');
+    tile.className = 'option-tile multi' + (sel ? ' selected' : '') + ((window.PMK_PROBLEM_RECOMMENDED||[]).includes(ex.key) ? ' pmk-problem-recommended' : '');
 
 
     tile.dataset.extraKey = ex.key;
@@ -6587,6 +6603,7 @@ function buildOrderData() {
 
 
     analytics: window.PMKQuizAnalytics && window.PMKQuizAnalytics.context || null,
+    selectedProblem:window.PMK_SELECTED_PROBLEM || null,
 
 
     name:state.name,phone:state.phone,address:state.email||'',
