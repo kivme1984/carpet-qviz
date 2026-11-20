@@ -4663,11 +4663,11 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
     var name=String(value||'').trim();if(!name)return;
     window.PMK_SELECTED_PROBLEM=name;
     var recommendations=[];
-    var detail='На шаге «Опции» вы сможете выбрать дополнительные услуги, если они нужны.';
-    if(name==='Пятна и грязь'){recommendations=['stain'];detail='При сложных пятнах на шаге «Опции» выберите их удаление. Обычная грязь входит в регулярную стирку.';}
-    else if(name==='После животных'){recommendations=['pet_hair'];detail='Если в ковре есть шерсть, на шаге «Опции» выберите вычёсывание. Запах мочи оплачивается отдельно только при выборе этой обработки.';}
-    else if(name==='Неприятный запах'){detail='На шаге «Опции» можно выбрать удаление запаха мочи, если причина именно в нём. Иные запахи уточним при приёмке.';}
-    else if(name==='Пыль и серость'){detail='Для пыли и серости обычно достаточно регулярной стирки.';}
+    var detail='Дополнительные услуги можно выбрать на шаге «Опции».';
+    if(name==='Пятна и грязь'){recommendations=['stain'];detail='Обычная грязь входит в стирку; удаление сложных пятен — на шаге «Опции».';}
+    else if(name==='После животных'){recommendations=['pet_hair'];detail='Если есть шерсть, выберите вычёсывание в «Опциях». Запах мочи — отдельная услуга.';}
+    else if(name==='Неприятный запах'){detail='Если причина — моча, выберите удаление запаха в «Опциях». Иные запахи уточним.';}
+    else if(name==='Пыль и серость'){detail='Обычно достаточно регулярной стирки.';}
     window.PMK_PROBLEM_RECOMMENDED=recommendations;
     if(!document.getElementById('pmk-recommended-extra-style')){
       var style=document.createElement('style');style.id='pmk-recommended-extra-style';
@@ -4688,7 +4688,7 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
     if(!note){note=document.createElement('div');note.id='pmk-problem-context';note.className='pmk-problem-context';lead.insertAdjacentElement('afterend',note)}
 
 
-    note.textContent='Ваша ситуация: '+name+'. '+detail+' Выбор сохранится в заявке. Дополнительные работы не добавляются без вашего выбора.';note.classList.add('is-visible');
+    note.textContent='Ваша ситуация: '+name+'. '+detail+' Сохраним выбор в заявке.';note.classList.add('is-visible');
 
 
   }
