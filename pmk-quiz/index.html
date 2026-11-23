@@ -4058,10 +4058,11 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
  .pmk-home-compact #screen-1 .card{padding:14px;margin:0}
  .pmk-home-compact #screen-1 .screen-title{font-size:21px;margin-bottom:6px}
  .pmk-home-compact #screen-1 .screen-sub{font-size:14px;line-height:1.4;margin-bottom:16px}
- .pmk-home-compact #screen-1 .size-inputs{gap:12px;margin-bottom:14px}
+ .pmk-home-compact #screen-1 .size-inputs{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px;margin-bottom:14px}
+ .pmk-home-compact #screen-1 .input-group{min-width:0}
  .pmk-home-compact #screen-1 .input-group label{font-size:12px;margin-bottom:4px}
- .pmk-home-compact #screen-1 .slider-container{padding:10px 12px 12px}
- .pmk-home-compact #screen-1 .slider-value{font-size:26px;margin-bottom:10px;line-height:1.1}
+ .pmk-home-compact #screen-1 .slider-container{padding:0}
+ .pmk-home-compact #screen-1 .slider-value{font-size:24px;min-height:44px;padding:8px;margin:0 0 12px;line-height:1.15}
  .pmk-home-compact #screen-1 .area-display{padding:9px 12px;margin-bottom:14px}
  .pmk-home-compact #screen-1 .btn{min-height:46px;padding:10px 14px;font-size:14px;justify-content:center}
  .pmk-home-compact #screen-1 .btn-row{gap:8px}
