@@ -4039,6 +4039,35 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
 </style>
 
 
+<script id="pmk-home-compact-mode">if(new URLSearchParams(location.search).get('layout')==='home-compact')document.documentElement.classList.add('pmk-home-compact');</script>
+<style id="pmk-home-compact-style">
+@media(max-width:980px){
+ html.pmk-home-compact,html.pmk-home-compact body{min-height:0!important;height:auto!important}
+ .pmk-home-compact body{display:block;align-items:start;padding:0!important}
+ .pmk-home-compact #pmk-quiz-calc{display:block;width:100%;max-width:100%;min-height:0!important;height:auto!important;padding:0 14px 12px!important;border:0;box-shadow:none;background:transparent;border-radius:0}
+ .pmk-home-compact .pmk-quiz-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;min-height:0}
+ .pmk-home-compact .quiz-value-panel{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:8px 0!important;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none;animation:none}
+ .pmk-home-compact .quiz-value-panel::before,.pmk-home-compact .quiz-value-panel::after{display:none}
+ .pmk-home-compact .quiz-value-panel :is(.value-kicker,.value-lead,.value-points,.value-trust,.value-hint,.value-price-label,small){display:none!important}
+ .pmk-home-compact .quiz-value-panel h2{font-size:14px!important;line-height:1.3;margin:0!important;max-width:none;letter-spacing:0;font-weight:600;color:#d6d8da}
+ .pmk-home-compact .quiz-value-panel .value-price-card{margin:0!important;padding:0!important;background:none;box-shadow:none;border:0;animation:none}
+ .pmk-home-compact .value-price-card strong{margin:0;font-size:18px!important;line-height:1.3;color:var(--yellow);white-space:nowrap}
+ .pmk-home-compact .quiz-shell{animation:none;align-items:flex-start}
+ .pmk-home-compact .step-label{font-size:11px;margin:0 0 8px}
+ .pmk-home-compact .progress-track{margin-bottom:10px}
+ .pmk-home-compact #screen-1 .card{padding:14px;margin:0}
+ .pmk-home-compact #screen-1 .screen-title{font-size:21px;margin-bottom:6px}
+ .pmk-home-compact #screen-1 .screen-sub{font-size:14px;line-height:1.4;margin-bottom:16px}
+ .pmk-home-compact #screen-1 .size-inputs{gap:12px;margin-bottom:14px}
+ .pmk-home-compact #screen-1 .input-group label{font-size:12px;margin-bottom:4px}
+ .pmk-home-compact #screen-1 .slider-container{padding:10px 12px 12px}
+ .pmk-home-compact #screen-1 .slider-value{font-size:26px;margin-bottom:10px;line-height:1.1}
+ .pmk-home-compact #screen-1 .area-display{padding:9px 12px;margin-bottom:14px}
+ .pmk-home-compact #screen-1 .btn{min-height:46px;padding:10px 14px;font-size:14px;justify-content:center}
+ .pmk-home-compact #screen-1 .btn-row{gap:8px}
+}
+</style>
+
 </head>
 
 
@@ -7091,22 +7120,9 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
 
 
-      var h = Math.max(
-
-
-        document.body.scrollHeight,
-
-
-        document.documentElement.scrollHeight,
-
-
-        document.body.offsetHeight,
-
-
-        document.documentElement.offsetHeight
-
-
-      );
+      var compact=document.documentElement.classList.contains('pmk-home-compact')&&matchMedia('(max-width:980px)').matches;
+      var section=document.getElementById('pmk-quiz-calc');
+      var h = compact&&section ? Math.ceil(section.getBoundingClientRect().height) : Math.max(document.body.scrollHeight,document.documentElement.scrollHeight,document.body.offsetHeight,document.documentElement.offsetHeight);
 
 
       parent.postMessage({ type: 'pmk-quiz-height', height: h }, '*');
