@@ -4053,21 +4053,10 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
  .pmk-home-compact .quiz-value-panel .value-price-card{margin:0!important;padding:0!important;background:none;box-shadow:none;border:0;animation:none}
  .pmk-home-compact .value-price-card strong{margin:0;font-size:18px!important;line-height:1.3;color:var(--yellow);white-space:nowrap}
  .pmk-home-compact .quiz-shell{animation:none;align-items:flex-start}
- .pmk-home-compact .step-label{font-size:11px;margin:0 0 8px}
- .pmk-home-compact .progress-track{margin-bottom:10px}
- .pmk-home-compact #screen-1 .card{padding:14px;margin:0}
- .pmk-home-compact #screen-1 .screen-title{font-size:21px;margin-bottom:6px}
- .pmk-home-compact #screen-1 .screen-sub{font-size:14px;line-height:1.4;margin-bottom:16px}
- .pmk-home-compact #screen-1 .size-inputs{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px;margin-bottom:14px}
- .pmk-home-compact #screen-1 .input-group{min-width:0}
- .pmk-home-compact #screen-1 .input-group label{font-size:12px;margin-bottom:4px}
- .pmk-home-compact #screen-1 .slider-container{padding:0}
- .pmk-home-compact #screen-1 .slider-value{font-size:24px;min-height:44px;padding:8px;margin:0 0 12px;line-height:1.15}
- .pmk-home-compact #screen-1 .area-display{padding:9px 12px;margin-bottom:14px}
- .pmk-home-compact #screen-1 .btn{min-height:46px;padding:10px 14px;font-size:14px;justify-content:center}
- .pmk-home-compact #screen-1 .btn-row{gap:8px}
+ .pmk-home-compact .quiz-value-panel{margin-bottom:12px}
 }
 </style>
+<script id="pmk-compact-header-position">document.addEventListener('DOMContentLoaded',function(){if(!document.documentElement.classList.contains('pmk-home-compact')||!matchMedia('(max-width:980px)').matches)return;var panel=document.querySelector('.quiz-value-panel'),shell=document.querySelector('.quiz-wrapper');if(panel&&shell)shell.prepend(panel);},{once:true});</script>
 
 </head>
 
