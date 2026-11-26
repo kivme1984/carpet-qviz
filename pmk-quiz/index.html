@@ -4210,7 +4210,7 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
           <div class="wf-item"><span>🔄</span>Любые ковры</div>
 
 
-          <div class="wf-item"><span>🚚</span>Доставка 0 ₽</div>
+          <div class="wf-item"><span>🚚</span>Доставка по городу 0 ₽</div>
 
 
         </div>
@@ -4441,7 +4441,7 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
       </button>
 
 
-      <div class="cart-summary" aria-live="polite"><strong id="cart-total" tabindex="-1"></strong><span id="cart-savings"></span><small id="cart-minimum"></small></div>
+      <div class="cart-summary" aria-live="polite"><strong id="cart-total" tabindex="-1"></strong><span id="cart-savings"></span><small id="cart-minimum"></small><small style="display:block;line-height:1.4;color:#bfc3c7">За пределами Нижнего Новгорода доставка оплачивается отдельно и в расчёт не входит.</small></div>
 
 
       <div class="btn-row" style="flex-direction:column; gap:10px;">
@@ -4570,7 +4570,7 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
       </div>
 
 
-      <div id="contact-order-total" class="contact-order-total" aria-live="polite"></div>
+      <div id="contact-order-total" class="contact-order-total" aria-live="polite"></div><p class="screen-sub" style="margin-top:-8px">За пределами города доставка оплачивается отдельно. В указанную сумму она не включена.</p>
 
 
       <div class="btn-row">
@@ -4624,7 +4624,7 @@ button:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
       <div class="result-trust-card" aria-live="polite">
 
 
-        <p class="result-trust-card__check">Если указанные данные совпадут после приёмки — цена не изменится.</p>
+        <p class="result-trust-card__check">Если указанные данные совпадут после приёмки — стоимость работ не изменится.</p><p>В Нижнем Новгороде забор и доставка бесплатны. За пределами города доставка оплачивается отдельно и в итоговую сумму не входит.</p>
 
 
         <p>На фабрике проверим фактический размер, материал и состояние ковра. Если размер окажется меньше — стоимость уменьшится. Если потребуется дополнительная обработка — сначала сообщим стоимость и получим ваше согласие.</p>
@@ -6577,7 +6577,7 @@ function renderOrderResult() {
   });
 
 
-  addLine(lines,'Доставка (по городу)',fmt(order.deliveryPayable)+' ₽','');
+  addLine(lines,'Забор и доставка по Нижнему Новгороду',fmt(order.deliveryPayable)+' ₽','');
 
 
   if (order.conditionerSaving) addLine(lines,'Подарочные кондиционеры: '+order.freeCount,'−'+fmt(order.conditionerSaving)+' ₽','discount');
